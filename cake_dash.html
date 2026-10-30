@@ -1,0 +1,1302 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cake Dash: The Little Bakery Rush</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cream:#fff7ee; --cream-deep:#fdebd9; --card:#fffdf9;
+  --pink:#ffc9d9; --pink-soft:#ffeaf0; --strawberry:#e5486d;
+  --strawberry-d:#c9345a; --brown:#6e4a3a; --brown-light:#b98a6a;
+  --border:#f0d9c6; --butter:#ffd98a; --mint:#bfe8d0;
+  --shadow:0 10px 28px rgba(110,74,58,.10);
+  --shadow-lift:0 14px 30px rgba(110,74,58,.16);
+  --font-title:"Fredoka","Trebuchet MS",sans-serif;
+  --font-body:"Nunito","Trebuchet MS",sans-serif;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;font-family:var(--font-body);font-weight:700;
+  color:var(--brown);background-color:var(--cream);
+  background-image:radial-gradient(#f4dcc8 1.3px,transparent 1.3px);
+  background-size:28px 28px
+}
+h1,h2,h3{margin:0;font-family:var(--font-title);font-weight:600}
+button{font-family:inherit}
+.hidden{display:none!important}
+svg{display:block}
+
+.screen{display:none;position:relative;z-index:1;min-height:100vh;padding:18px}
+.screen.active{display:block}
+#start-screen.active,#end-screen.active{display:flex;align-items:center;justify-content:center}
+
+.decor{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;font-size:28px;opacity:.5}
+.decor span{position:absolute;animation:float 6s ease-in-out infinite}
+.decor span:nth-child(1){left:4%;top:15%}
+.decor span:nth-child(2){right:5%;top:12%;animation-delay:-2s}
+.decor span:nth-child(3){left:3%;bottom:10%;animation-delay:-4s}
+.decor span:nth-child(4){right:4%;bottom:14%;animation-delay:-1s}
+
+.card{background:var(--card);border:2px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.card-title{font-size:1.15rem;color:var(--brown)}
+.card-title.big{font-size:1.6rem;text-align:center}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--font-title);font-weight:500;font-size:1.05rem;
+  color:var(--brown);border:2px solid transparent;border-radius:999px;
+  padding:11px 24px;cursor:pointer;transition:.15s ease
+}
+.btn:active{transform:translateY(2px)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--strawberry);color:white;box-shadow:0 5px 0 var(--strawberry-d),0 10px 18px rgba(229,72,109,.25)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-soft{background:var(--pink-soft);border-color:var(--pink)}
+.btn-soft:hover{background:var(--pink)}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--brown-light)}
+.btn-small{padding:6px 14px;font-size:.9rem}
+
+.actions{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:18px;flex-wrap:wrap}
+.hero{max-width:460px;width:100%;text-align:center;padding:28px 26px}
+.hero-cake{width:150px;margin:0 auto 4px;animation:bob 2.8s infinite}
+.hero-title{font-size:3rem;line-height:1.05;color:var(--strawberry)}
+.hero-sub{margin:4px 0 18px;font-size:1.1rem;color:var(--brown-light)}
+.steps{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px;text-align:left}
+.steps li{display:flex;align-items:center;gap:12px;background:var(--cream-deep);border-radius:14px;padding:9px 14px}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--pink);display:grid;place-items:center;flex-shrink:0}
+.facts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.chip{background:var(--pink-soft);border:2px solid var(--pink);border-radius:999px;padding:3px 12px;font-size:.85rem}
+.best-line{margin:16px 0 0;color:var(--brown-light)}
+.best-line strong{color:var(--brown);font-family:var(--font-title);font-size:1.1rem}
+.results .hero-sub{margin-bottom:8px}
+.final-label{color:var(--brown-light);margin:6px 0 0}
+.final-score{margin:0;font-family:var(--font-title);font-size:4.2rem;line-height:1.1;color:var(--strawberry)}
+.new-best{display:inline-block;background:var(--butter);border-radius:999px;padding:3px 14px}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stat{background:var(--cream-deep);border-radius:16px;padding:10px 6px}
+.stat b{display:block;font-family:var(--font-title);font-size:1.5rem}
+.stat span{font-size:.75rem;color:var(--brown-light)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;max-width:1250px;margin:0 auto 16px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{font-size:43px}
+.brand-text h1{font-size:1.7rem;line-height:1;color:var(--strawberry)}
+.brand-text span{font-size:.85rem;color:var(--brown-light)}
+.hud{display:flex;gap:10px;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--border);border-radius:999px;padding:6px 17px;box-shadow:var(--shadow);min-width:115px}
+.pill-icon{font-size:25px}
+.pill-text small{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--brown-light)}
+.pill-text b{font-family:var(--font-title);font-size:1.4rem}
+.pill.low{background:#ffeaea;border-color:#ffb8c4}
+.pill.low b{color:var(--strawberry-d)}
+
+.layout{display:grid;grid-template-columns:minmax(180px,220px) minmax(0,1fr) minmax(220px,270px);gap:16px;max-width:1250px;margin:0 auto;align-items:start}
+.queue-card .card-title{margin-bottom:12px}
+.queue{display:flex;flex-direction:column;gap:8px}
+.customer{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:16px;background:var(--cream);border:2px solid transparent;opacity:.8}
+.customer-face{width:46px;height:46px;display:grid;place-items:center;background:var(--pink-soft);border-radius:50%;font-size:27px;flex-shrink:0}
+.customer.front{background:var(--pink-soft);border-color:var(--strawberry);opacity:1;padding:10px 12px;box-shadow:0 6px 16px rgba(229,72,109,.15)}
+.customer.front .customer-face{width:58px;height:58px;font-size:34px}
+.customer .who small{display:block;font-size:.72rem;color:var(--brown-light)}
+.customer .who b{font-size:.9rem}
+.customer.front .who b{color:var(--strawberry-d);font-family:var(--font-title);font-size:1.05rem}
+
+.workshop-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.bakery-label{font-size:.75rem;color:var(--brown-light);background:var(--cream-deep);padding:5px 10px;border-radius:999px}
+.cake-stage{position:relative;height:210px;margin-bottom:8px;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,var(--pink-soft) 0 52%,transparent 53%);overflow:hidden}
+.cake-preview{width:210px;z-index:2;transition:.2s}
+.cake-preview.shake{animation:shake .4s}
+.cake-preview.serve{animation:serveAway .5s forwards}
+.stage-decoration{position:absolute;font-size:24px;opacity:.6}
+.stage-decoration.left{left:12%;top:35%}
+.stage-decoration.right{right:12%;top:30%}
+.oven-status{position:absolute;bottom:5px;right:5px;background:white;border:2px solid var(--border);border-radius:12px;padding:5px 10px;font-size:.76rem;z-index:3}
+.oven-status.active{background:#fff1d7;border-color:var(--butter);animation:pulse 1s infinite}
+
+.section{margin-top:12px}
+.section h3{display:flex;align-items:center;gap:8px;font-size:1rem;margin-bottom:7px}
+.num{width:22px;height:22px;border-radius:50%;background:var(--pink);display:grid;place-items:center;font-size:.8rem}
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.choice{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--card);border:2px solid var(--border);border-radius:16px;padding:8px 3px;min-height:80px;font-family:var(--font-body);font-weight:800;font-size:.78rem;color:var(--brown);cursor:pointer;transition:.15s ease}
+.choice .swatch{font-size:27px}
+.choice:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift);border-color:var(--pink)}
+.choice.selected{background:var(--pink-soft);border-color:var(--strawberry);box-shadow:0 0 0 3px rgba(229,72,109,.15)}
+.choice.selected::after{content:"✓";position:absolute;top:-7px;right:-6px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--strawberry);color:white}
+.choice.locked{opacity:.55;background:#f5eee7}
+.choice.locked:hover{transform:none}
+.choice.locked .swatch{filter:grayscale(1)}
+.choice small{font-size:.65rem;color:var(--brown-light)}
+
+.order-card{border:2px dashed var(--brown-light);transition:.2s}
+.order-card.hurry{border-color:var(--strawberry);box-shadow:0 0 0 4px rgba(229,72,109,.1),var(--shadow)}
+.order-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.order-face{width:52px;height:52px;display:grid;place-items:center;font-size:32px;background:var(--pink-soft);border-radius:50%}
+.order-sub{font-size:.8rem;color:var(--brown-light)}
+.patience-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--brown-light);margin:12px 0 5px}
+.order-timer{position:relative;height:24px;background:var(--cream-deep);border-radius:999px;overflow:hidden;border:2px solid var(--border)}
+.order-bar{height:100%;width:100%;background:var(--pink);transition:width .1s linear,background .3s}
+.order-bar.warn{background:var(--butter)}
+.order-bar.danger{background:#ff9b9b}
+.order-timer-text{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-title);font-size:.8rem}
+.hurry-chip{margin:10px 0 0;padding:6px 12px;background:#fff3d1;border:2px solid var(--butter);border-radius:12px;font-size:.78rem;text-align:center}
+.order-list{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.order-list li{display:flex;align-items:center;gap:8px;background:var(--cream);border:2px solid transparent;border-radius:14px;padding:7px 9px;font-size:.85rem}
+.order-list .order-emoji{font-size:24px}
+.order-list .kind{font-size:.68rem;color:var(--brown-light);display:block}
+.order-list li.done{background:#effaf3;border-color:var(--mint)}
+.order-list .check{margin-left:auto;color:#4c9870;font-size:18px}
+
+.reward-panel{margin-top:16px;padding:12px;background:var(--cream-deep);border-radius:15px;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center}
+.reward-panel small{display:block;color:var(--brown-light);font-size:.7rem}
+.reward-panel b{font-family:var(--font-title);font-size:1.1rem}
+.progress-area{margin-top:12px}
+.progress-area small{color:var(--brown-light)}
+.progress-track{height:9px;background:var(--cream-deep);border-radius:99px;overflow:hidden;margin-top:5px}
+.progress-fill{height:100%;width:0;background:var(--strawberry);border-radius:99px;transition:.3s}
+
+.toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);padding:11px 23px;background:var(--card);border:2px solid var(--pink);border-radius:999px;box-shadow:var(--shadow-lift);pointer-events:none;opacity:0;z-index:20;white-space:nowrap}
+.toast.show{animation:toast 1.5s ease forwards}
+.toast.bad{border-color:var(--butter)}
+
+.modal{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(110,74,58,.4)}
+.modal-box{max-width:600px;width:100%;max-height:90vh;overflow:auto;text-align:center;padding:24px;animation:pop .3s}
+.modal-note{margin:4px 0 12px;color:var(--brown-light);font-size:.85rem}
+.recipe-group{margin-top:16px;text-align:left}
+.recipe-group h3{margin-bottom:8px;font-size:1rem}
+.recipe-items{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.recipe-item{display:flex;flex-direction:column;align-items:center;background:var(--cream);border-radius:14px;padding:9px 5px;font-size:.8rem;gap:3px}
+.recipe-item .emoji{font-size:27px}
+.recipe-item button{background:var(--pink);color:var(--brown);border:0;border-radius:99px;padding:4px 12px;cursor:pointer;font-weight:800;font-size:.7rem}
+.recipe-item .owned{color:#4c9870;font-size:.7rem}
+.modal-box>.btn{margin-top:18px}
+.customer-note{background:var(--pink-soft);padding:9px;border-radius:12px;margin-top:12px;font-size:.8rem}
+
+@keyframes bob{50%{transform:translateY(-5px)}}
+@keyframes float{50%{transform:translateY(-10px) rotate(8deg)}}
+@keyframes pulse{50%{transform:scale(1.04)}}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes shake{20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes serveAway{to{transform:translateY(-18px) scale(1.08);opacity:0}}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,15px) scale(.9)}15%,80%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-20px)}}
+
+@media(max-width:960px){
+  .layout{grid-template-columns:1fr}
+  .queue{flex-direction:row;overflow-x:auto;padding-bottom:5px}
+  .customer{flex-shrink:0}
+  .choices{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:550px){
+  .screen{padding:10px}
+  .hero-title{font-size:2.5rem}
+  .hud{width:100%}
+  .pill{flex:1;min-width:0}
+  .choices{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .workshop-head{flex-wrap:wrap}
+  .cake-stage{height:185px}
+  .cake-preview{width:185px}
+  .stat-row{gap:5px}
+  .stat span{font-size:.65rem}
+}
+</style>
+</head>
+
+<body>
+
+<div class="decor" aria-hidden="true">
+  <span>⭐</span><span>💗</span><span>🍓</span><span>✨</span>
+</div>
+
+<section id="start-screen" class="screen active">
+  <div class="card hero">
+    <div id="title-cake" class="hero-cake"></div>
+    <h1 class="hero-title">Cake Dash</h1>
+    <p class="hero-sub">The Little Bakery Rush</p>
+
+    <ol class="steps">
+      <li><span class="step-num">1</span>Check the customer's order</li>
+      <li><span class="step-num">2</span>Pick the base, frosting and topping</li>
+      <li><span class="step-num">3</span>Bake and serve before time runs out!</li>
+    </ol>
+
+    <p class="facts">
+      <span class="chip"><span id="info-game-seconds">120</span>s round</span>
+      <span class="chip">30s per customer</span>
+    </p>
+
+    <div class="reward-panel">
+      <div><small>💰 Your coins</small><b id="start-coins">0</b></div>
+      <div><small>⭐ Best score</small><b id="best-start">0</b></div>
+    </div>
+
+    <div class="actions">
+      <button id="start-btn" class="btn btn-primary">Start Baking</button>
+      <button id="recipe-btn-start" class="btn btn-soft">📖 Recipe Book</button>
+    </div>
+
+    <p class="best-line">Welcome to your little bakery! 🍰</p>
+  </div>
+</section>
+
+<section id="game-screen" class="screen">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">🧁</div>
+      <div class="brand-text">
+        <h1>Cake Dash</h1>
+        <span>The Little Bakery Rush</span>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="pill" id="timer-pill">
+        <span class="pill-icon">⏰</span>
+        <span class="pill-text"><small>Time left</small><b id="game-timer">2:00</b></span>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">⭐</span>
+        <span class="pill-text"><small>Score</small><b id="score">0</b></span>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">🪙</span>
+        <span class="pill-text"><small>Coins</small><b id="coins">0</b></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="card queue-card">
+      <h2 class="card-title">Customers</h2>
+      <p class="modal-note">Your customers are waiting! 💗</p>
+      <div id="queue" class="queue"></div>
+      <div class="customer-note">😊 Serve customers correctly to earn coins and rewards!</div>
+    </aside>
+
+    <section class="card workshop">
+      <div class="workshop-head">
+        <h2 class="card-title">Cake Workshop</h2>
+        <button id="recipe-btn-game" class="btn btn-soft btn-small">📖 Recipe Book</button>
+      </div>
+
+      <div class="bakery-label">🍰 LITTLE BAKERY • PREPARATION COUNTER</div>
+
+      <div id="cake-stage" class="cake-stage">
+        <span class="stage-decoration left">✨</span>
+        <div id="cake-preview" class="cake-preview"></div>
+        <span class="stage-decoration right">🍓</span>
+        <div id="oven-status" class="oven-status">🧁 Ready to bake</div>
+      </div>
+
+      <div class="section">
+        <h3><span class="num">1</span> Cake Base</h3>
+        <div id="choices-base" class="choices"></div>
+      </div>
+
+      <div class="section">
+        <h3><span class="num">2</span> Frosting</h3>
+        <div id="choices-frosting" class="choices"></div>
+      </div>
+
+      <div class="section">
+        <h3><span class="num">3</span> Topping</h3>
+        <div id="choices-topping" class="choices"></div>
+      </div>
+
+      <div class="actions">
+        <button id="clear-btn" class="btn btn-ghost">Clear</button>
+        <button id="serve-btn" class="btn btn-primary">🧁 Bake & Serve</button>
+      </div>
+    </section>
+
+    <aside id="order-card" class="card order-card">
+      <div class="order-head">
+        <div id="order-face" class="order-face">😊</div>
+        <div>
+          <h2 class="card-title">Current Order</h2>
+          <span id="order-name" class="order-sub">Now serving</span>
+        </div>
+      </div>
+
+      <div class="patience-label">
+        <span>Customer patience</span>
+        <b id="patience-text">30s</b>
+      </div>
+
+      <div class="order-timer">
+        <div id="order-bar" class="order-bar"></div>
+        <span id="order-timer-text" class="order-timer-text">30s</span>
+      </div>
+
+      <p id="hurry-chip" class="hurry-chip hidden">😟 Hurry! Customer is getting impatient!</p>
+
+      <p style="font-size:.82rem;color:var(--brown-light);margin-top:16px">Customer's request:</p>
+      <ul id="order-list" class="order-list"></ul>
+
+      <div class="reward-panel">
+        <div><small>⭐ Combo streak</small><b id="combo">0x</b></div>
+        <div><small>🪙 Correct order</small><b>+5 coins</b></div>
+      </div>
+
+      <div class="progress-area">
+        <small>Bakery progress</small>
+        <div class="progress-track">
+          <div id="round-progress" class="progress-fill"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</section>
+
+<section id="end-screen" class="screen">
+  <div class="card hero results">
+    <div id="end-cake" class="hero-cake small"></div>
+    <h1 class="hero-title">Time's Up!</h1>
+    <p id="end-line" class="hero-sub">Sweet work, baker!</p>
+
+    <p class="final-label">Final score</p>
+    <p id="final-score" class="final-score">0</p>
+    <p id="new-best" class="new-best hidden">🏆 New best score!</p>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stat-served">0</b><span>Cakes served</span></div>
+      <div class="stat"><b id="stat-wrong">0</b><span>Wrong cakes</span></div>
+      <div class="stat"><b id="stat-lost">0</b><span>Customers lost</span></div>
+    </div>
+
+    <div class="reward-panel">
+      <div><small>🪙 Coins earned</small><b id="coins-earned">0</b></div>
+      <div><small>⭐ Best combo</small><b id="best-combo">0x</b></div>
+    </div>
+
+    <p class="best-line">Total coins: <strong id="total-coins">0</strong></p>
+
+    <div class="actions">
+      <button id="again-btn" class="btn btn-primary">Play Again</button>
+    </div>
+  </div>
+</section>
+
+<div id="recipe-modal" class="modal hidden">
+  <div class="card modal-box">
+    <h2 class="card-title big">📖 Recipe Book</h2>
+    <p class="modal-note">Discover ingredients and unlock new flavors for your bakery!</p>
+
+    <div class="reward-panel">
+      <div><small>🪙 Available coins</small><b id="shop-coins">0</b></div>
+      <div><small>🍰 Available ingredients</small><b id="ingredient-count">0</b></div>
+    </div>
+
+    <div id="recipe-content"></div>
+    <button id="recipe-close" class="btn btn-primary">Got it!</button>
+  </div>
+</div>
+
+<script>
+/* =========================================
+   CAKE DASH - GAME SETTINGS
+   ========================================= */
+
+const CONFIG = {
+  GAME_SECONDS:120,
+  ORDER_SECONDS:15,
+  POINTS_CORRECT:10,
+  POINTS_PENALTY:5,
+  QUEUE_SIZE:4,
+  COINS_CORRECT:5,
+  UNLOCK_COST:10,
+  BAKE_SECONDS:1.5
+};
+
+/* INGREDIENT DATABASE */
+
+const INGREDIENTS = {
+  base:[
+    {id:"chocolate",label:"Chocolate",emoji:"🍫",color:"#6b3f26",unlocked:true},
+    {id:"vanilla",label:"Vanilla",emoji:"🍦",color:"#f3deaa",unlocked:true},
+    {id:"strawberry",label:"Strawberry",emoji:"🍓",color:"#f4a0b5",unlocked:true},
+    {id:"redvelvet",label:"Red Velvet",emoji:"❤️",color:"#bd394d"},
+    {id:"lemon",label:"Lemon",emoji:"🍋",color:"#f7dc69"},
+    {id:"coffee",label:"Coffee",emoji:"☕",color:"#9b6848"},
+    {id:"carrot",label:"Carrot",emoji:"🥕",color:"#df8b43"},
+    {id:"matcha",label:"Matcha",emoji:"🍵",color:"#9cb77a"}
+  ],
+
+  frosting:[
+    {id:"chocolate",label:"Chocolate",emoji:"🍫",color:"#4a2a18",unlocked:true},
+    {id:"vanilla",label:"Vanilla",emoji:"🍦",color:"#fff4d6",unlocked:true},
+    {id:"pink",label:"Strawberry",emoji:"🌸",color:"#ff8fb8",unlocked:true},
+    {id:"creamcheese",label:"Cream Cheese",emoji:"🧀",color:"#fff0d0"},
+    {id:"caramel",label:"Caramel",emoji:"🍯",color:"#d99a42"},
+    {id:"blueberry",label:"Blueberry",emoji:"🫐",color:"#7778b9"},
+    {id:"matcha",label:"Matcha",emoji:"🍵",color:"#9bbd7a"},
+    {id:"ube",label:"Ube",emoji:"💜",color:"#a68bd2"}
+  ],
+
+  topping:[
+    {id:"cherry",label:"Cherry",emoji:"🍒",color:"#d8143a",unlocked:true},
+    {id:"strawberry",label:"Strawberry",emoji:"🍓",color:"#ff4d6d",unlocked:true},
+    {id:"sprinkles",label:"Sprinkles",emoji:"✨",color:"#ffd66b",unlocked:true},
+    {id:"blueberry",label:"Blueberries",emoji:"🫐",color:"#5965a9"},
+    {id:"banana",label:"Banana",emoji:"🍌",color:"#f4d65d"},
+    {id:"oreo",label:"Oreo",emoji:"🍪",color:"#4b342a"},
+    {id:"almonds",label:"Almonds",emoji:"🥜",color:"#c99a68"},
+    {id:"chips",label:"Choco Chips",emoji:"🍫",color:"#68412d"},
+    {id:"marshmallow",label:"Marshmallow",emoji:"🍡",color:"#fff0e5"},
+    {id:"peach",label:"Peach",emoji:"🍑",color:"#f3a17f"},
+    {id:"macaron",label:"Macaron",emoji:"🧁",color:"#d9a3cc"}
+  ]
+};
+
+const LAYERS = ["base","frosting","topping"];
+const LAYER_NAMES = {
+  base:"Cake Base",
+  frosting:"Frosting",
+  topping:"Topping"
+};
+
+const CUSTOMER_NAMES = [
+  "Mia","Luna","Sophie","Oliver","Emma","Noah","Chloe",
+  "Leo","Ava","Theo","Bella","Ellie","Milo","Daisy","Lily"
+];
+
+const CUSTOMER_FACES = ["👩🏻","👩🏽","👨🏻","👧🏼","👦🏽","👩🏾","👨🏼","👧🏻","👩🏼","🧑🏻"];
+
+/* SAVED PROGRESS */
+
+function readSavedNumber(key) {
+  try {
+    const value = Number(localStorage.getItem(key));
+    return Number.isFinite(value) && value >= 0 ? value : 0;
+  } catch(error) {
+    return 0;
+  }
+}
+
+function readSavedObject(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch(error) {
+    return {};
+  }
+}
+
+let coins = readSavedNumber("cakeDashCoins");
+let bestScore = readSavedNumber("cakeDashBest");
+let unlocked = readSavedObject("cakeDashUnlocked");
+
+LAYERS.forEach(layer => {
+  INGREDIENTS[layer].forEach(item => {
+    if(item.unlocked) unlocked[item.id + "_" + layer] = true;
+  });
+});
+
+function isUnlocked(layer,id) {
+  return !!unlocked[id + "_" + layer];
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem("cakeDashCoins",coins);
+    localStorage.setItem("cakeDashBest",bestScore);
+    localStorage.setItem("cakeDashUnlocked",JSON.stringify(unlocked));
+  } catch(error) {
+    console.warn("Progress could not be saved.");
+  }
+}
+
+function availableIngredients(layer) {
+  return INGREDIENTS[layer].filter(item => isUnlocked(layer,item.id));
+}
+
+/* GAME STATE */
+
+let state = null;
+let timerId = null;
+let bakingInterval = null;
+let nextCustomerId = 1;
+let baking = false;
+let toastTimeout = null;
+
+function freshState() {
+  return {
+    running:false,
+    score:0,
+    gameTimeLeft:CONFIG.GAME_SECONDS,
+    orderTimeLeft:CONFIG.ORDER_SECONDS,
+    queue:[],
+    selection:{base:null,frosting:null,topping:null},
+    served:0,
+    wrong:0,
+    expired:0,
+    combo:0,
+    bestCombo:0,
+    coinsEarned:0,
+    lastTick:0
+  };
+}
+
+const $ = id => document.getElementById(id);
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+function findItem(layer,id) {
+  return INGREDIENTS[layer].find(item => item.id === id);
+}
+
+/* AUDIO EFFECTS */
+
+let audioContext = null;
+
+function playSound(type) {
+  try {
+    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+
+    if(audioContext.state === "suspended") audioContext.resume();
+
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    const sounds = {
+      click:[440,.06],
+      select:[550,.08],
+      success:[660,.15],
+      wrong:[180,.18],
+      unlock:[880,.25],
+      bake:[330,.35]
+    };
+
+    const [frequency,duration] = sounds[type] || sounds.click;
+
+    osc.frequency.setValueAtTime(frequency,audioContext.currentTime);
+
+    if(type === "success" || type === "unlock") {
+      osc.frequency.exponentialRampToValueAtTime(
+        frequency*1.5,
+        audioContext.currentTime+duration
+      );
+    }
+
+    gain.gain.setValueAtTime(.12,audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+      .001,
+      audioContext.currentTime+duration
+    );
+
+    osc.start();
+    osc.stop(audioContext.currentTime+duration);
+  } catch(error) {}
+}
+
+/* SCREEN HELPERS */
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(screen => {
+    screen.classList.remove("active");
+  });
+  $(id).classList.add("active");
+}
+
+function formatTime(seconds) {
+  const s = Math.max(0,Math.ceil(seconds));
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+}
+
+function toast(message,bad=false) {
+  const element = $("toast");
+  element.textContent = message;
+  element.classList.toggle("bad",bad);
+  element.classList.remove("show");
+  void element.offsetWidth;
+  element.classList.add("show");
+
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    element.classList.remove("show");
+  },1600);
+}
+
+/* CAKE DRAWING */
+
+function cakeSVG(selection) {
+  const base = selection.base ? findItem("base",selection.base) : null;
+  const frost = selection.frosting ? findItem("frosting",selection.frosting) : null;
+  const topping = selection.topping ? findItem("topping",selection.topping) : null;
+
+  let html = `<svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg">`;
+
+  html += `<ellipse cx="100" cy="166" rx="88" ry="14" fill="#fff" stroke="#6e4a3a" stroke-width="3"/>`;
+  html += `<ellipse cx="100" cy="162" rx="67" ry="8" fill="#f4d9c4"/>`;
+
+  html += `<path d="M42 100 h116 v52 q0 12 -12 12 h-92 q-12 0 -12 -12z"
+    fill="${base ? base.color : "#f5e8dc"}"
+    stroke="#6e4a3a" stroke-width="4"/>`;
+
+  if(base) {
+    html += `<path d="M60 125h80" stroke="rgba(255,255,255,.4)" stroke-width="5" stroke-linecap="round"/>`;
+  } else {
+    html += `<text x="100" y="139" text-anchor="middle" font-size="12" fill="#b98a6a">Base</text>`;
+  }
+
+  const frostPath = `M36 104 q0 -22 22 -22 h84 q22 0 22 22 q0 8 -9 8 q-5 14 -12 0 q-6 -4 -12 6 q-6 12 -13 0 q-6 -6 -14 0 q-7 12 -13 0 q-6 -6 -12 4 q-7 12 -13 -2 q-9 4 -9 -8z`;
+
+  html += `<path d="${frostPath}"
+    fill="${frost ? frost.color : "none"}"
+    stroke="${frost ? "#6e4a3a" : "#c9ad98"}"
+    stroke-width="4"
+    ${frost ? "" : "stroke-dasharray='7 6'"} />`;
+
+  if(frost) {
+    html += `<path d="M62 92q10 -6 20 0" stroke="rgba(255,255,255,.6)" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  }
+
+  if(topping) {
+    html += `<text x="100" y="75" font-size="37" text-anchor="middle" dominant-baseline="middle">${topping.emoji}</text>`;
+  } else {
+    html += `<circle cx="100" cy="66" r="12" fill="none" stroke="#c9ad98" stroke-width="3" stroke-dasharray="5 5"/>`;
+  }
+
+  html += `</svg>`;
+  return html;
+}
+
+/* CUSTOMER SYSTEM */
+
+function makeCustomer() {
+  return {
+    id:nextCustomerId++,
+    name:pick(CUSTOMER_NAMES),
+    face:pick(CUSTOMER_FACES),
+    order:{
+      base:pick(availableIngredients("base")).id,
+      frosting:pick(availableIngredients("frosting")).id,
+      topping:pick(availableIngredients("topping")).id
+    }
+  };
+}
+
+function fillQueue() {
+  while(state.queue.length < CONFIG.QUEUE_SIZE) {
+    state.queue.push(makeCustomer());
+  }
+}
+
+function renderQueue() {
+  const container = $("queue");
+  container.innerHTML = "";
+
+  state.queue.forEach((customer,index) => {
+    const div = document.createElement("div");
+    div.className = "customer" + (index === 0 ? " front" : "");
+
+    div.innerHTML = `
+      <div class="customer-face">${customer.face}</div>
+      <div class="who">
+        <b>${customer.name}</b>
+        <small>${index === 0 ? "Now serving!" : "Waiting in line"}</small>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+/* ORDER TICKET */
+
+function renderOrder() {
+  const front = state.queue[0];
+  if(!front) return;
+
+  $("order-face").textContent = front.face;
+  $("order-name").textContent = front.name + "'s order";
+
+  const list = $("order-list");
+  list.innerHTML = "";
+
+  LAYERS.forEach(layer => {
+    const item = findItem(layer,front.order[layer]);
+    const li = document.createElement("li");
+    const complete = state.selection[layer] === front.order[layer];
+
+    if(complete) li.classList.add("done");
+
+    li.innerHTML = `
+      <span class="order-emoji">${item.emoji}</span>
+      <span><span class="kind">${LAYER_NAMES[layer]}</span>${item.label}</span>
+      <span class="check">${complete ? "✓" : ""}</span>
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+/* INGREDIENT BUTTONS */
+
+function buildChoiceButtons() {
+  LAYERS.forEach(layer => {
+    const container = $("choices-" + layer);
+    container.innerHTML = "";
+
+    INGREDIENTS[layer].forEach(item => {
+      const button = document.createElement("button");
+      const owned = isUnlocked(layer,item.id);
+
+      button.className = "choice" + (owned ? "" : " locked");
+      button.innerHTML = `
+        <span class="swatch">${item.emoji}</span>
+        <span>${item.label}</span>
+        ${owned ? "" : `<small>🔒 ${CONFIG.UNLOCK_COST} coins</small>`}
+      `;
+
+      button.addEventListener("click",() => {
+        if(!owned) {
+          openRecipe();
+          return;
+        }
+        selectIngredient(layer,item.id);
+      });
+
+      container.appendChild(button);
+    });
+  });
+
+  renderCake();
+}
+
+function renderCake() {
+  $("cake-preview").innerHTML = cakeSVG(state.selection);
+
+  LAYERS.forEach(layer => {
+    const buttons = $("choices-" + layer).querySelectorAll(".choice");
+
+    buttons.forEach((button,index) => {
+      const item = INGREDIENTS[layer][index];
+      button.classList.toggle(
+        "selected",
+        state.selection[layer] === item.id
+      );
+    });
+  });
+}
+
+/* RECIPE BOOK AND INGREDIENT SHOP */
+
+function buildRecipeBook() {
+  let html = "";
+
+  LAYERS.forEach(layer => {
+    html += `
+      <div class="recipe-group">
+        <h3>${LAYER_NAMES[layer]}</h3>
+        <div class="recipe-items">
+    `;
+
+    INGREDIENTS[layer].forEach(item => {
+      const owned = isUnlocked(layer,item.id);
+
+      html += `
+        <div class="recipe-item">
+          <span class="emoji">${item.emoji}</span>
+          <span>${item.label}</span>
+          ${owned
+            ? `<span class="owned">✓ Unlocked</span>`
+            : `<button onclick="unlockIngredient('${layer}','${item.id}')">Unlock · ${CONFIG.UNLOCK_COST} 🪙</button>`
+          }
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
+  });
+
+  const combinations = LAYERS.reduce(
+    (total,layer) => total * availableIngredients(layer).length,
+    1
+  );
+
+  html += `
+    <p style="margin-top:16px;font-size:.85rem;color:var(--brown-light)">
+      🍰 You can create <strong>${combinations}</strong> different cakes with your unlocked ingredients!
+    </p>
+  `;
+
+  $("recipe-content").innerHTML = html;
+  $("shop-coins").textContent = coins;
+
+  const count = LAYERS.reduce(
+    (total,layer) => total + availableIngredients(layer).length,
+    0
+  );
+
+  $("ingredient-count").textContent = count;
+}
+
+function unlockIngredient(layer,id) {
+  const key = id + "_" + layer;
+
+  if(unlocked[key]) return;
+
+  if(coins < CONFIG.UNLOCK_COST) {
+    toast("Not enough coins! Keep serving customers.",true);
+    return;
+  }
+
+  coins -= CONFIG.UNLOCK_COST;
+  unlocked[key] = true;
+
+  saveProgress();
+  playSound("unlock");
+
+  updateCoinDisplay();
+  buildRecipeBook();
+  buildChoiceButtons();
+
+  toast("🎉 New ingredient unlocked!");
+}
+
+function openRecipe() {
+  buildRecipeBook();
+  $("recipe-modal").classList.remove("hidden");
+}
+
+function closeRecipe() {
+  $("recipe-modal").classList.add("hidden");
+}
+
+/* INGREDIENT SELECTION */
+
+function selectIngredient(layer,id) {
+  if(!state.running || baking) return;
+
+  state.selection[layer] =
+    state.selection[layer] === id ? null : id;
+
+  playSound("select");
+  renderCake();
+  renderOrder();
+}
+
+function clearCake() {
+  if(!state.running || baking) return;
+
+  state.selection = {
+    base:null,
+    frosting:null,
+    topping:null
+  };
+
+  renderCake();
+  renderOrder();
+  playSound("click");
+}
+
+/* TIMERS */
+
+function renderTimers() {
+  $("game-timer").textContent = formatTime(state.gameTimeLeft);
+  $("timer-pill").classList.toggle("low",state.gameTimeLeft <= 15);
+
+  const percent = Math.max(
+    0,
+    state.orderTimeLeft / CONFIG.ORDER_SECONDS * 100
+  );
+
+  $("order-bar").style.width = percent + "%";
+  $("order-bar").classList.toggle("warn",percent <= 50 && percent > 25);
+  $("order-bar").classList.toggle("danger",percent <= 25);
+
+  $("order-timer-text").textContent = Math.ceil(state.orderTimeLeft) + "s";
+  $("patience-text").textContent = Math.ceil(state.orderTimeLeft) + "s";
+
+  $("order-card").classList.toggle("hurry",percent <= 30);
+  $("hurry-chip").classList.toggle("hidden",percent > 30);
+
+  $("round-progress").style.width =
+    ((CONFIG.GAME_SECONDS - state.gameTimeLeft) / CONFIG.GAME_SECONDS * 100) + "%";
+}
+
+function renderScore() {
+  $("score").textContent = state.score;
+  $("combo").textContent = state.combo + "x";
+}
+
+/* GAME FLOW */
+
+function startGame() {
+  clearInterval(timerId);
+  clearInterval(bakingInterval);
+
+  state = freshState();
+  state.running = true;
+  baking = false;
+  nextCustomerId = 1;
+
+  fillQueue();
+  showScreen("game-screen");
+
+  $("serve-btn").disabled = false;
+  $("serve-btn").textContent = "🧁 Bake & Serve";
+
+  renderScore();
+  renderTimers();
+  renderQueue();
+  renderOrder();
+  renderCake();
+
+  $("oven-status").textContent = "🧁 Ready to bake";
+  $("oven-status").classList.remove("active");
+
+  state.lastTick = Date.now();
+  timerId = setInterval(tick,100);
+
+  playSound("click");
+}
+
+function tick() {
+  if(!state || !state.running) return;
+
+  const now = Date.now();
+  const dt = (now - state.lastTick) / 1000;
+
+  state.lastTick = now;
+
+  /* The overall timer always runs. */
+  state.gameTimeLeft -= dt;
+
+  /* The active customer's timer also runs during baking. */
+  state.orderTimeLeft -= dt;
+
+  if(state.gameTimeLeft <= 0) {
+    state.gameTimeLeft = 0;
+    renderTimers();
+    endGame();
+    return;
+  }
+
+  /* Customer expiration takes priority, even during baking. */
+  if(state.orderTimeLeft <= 0) {
+    state.orderTimeLeft = 0;
+    renderTimers();
+    expireOrder();
+    return;
+  }
+
+  renderTimers();
+}
+
+function changeScore(amount) {
+  state.score += amount;
+  renderScore();
+}
+
+function addCoins(amount) {
+  coins += amount;
+  state.coinsEarned += amount;
+
+  saveProgress();
+  updateCoinDisplay();
+}
+
+function updateCoinDisplay() {
+  $("coins").textContent = coins;
+  $("start-coins").textContent = coins;
+  $("shop-coins").textContent = coins;
+  $("total-coins").textContent = coins;
+}
+
+function cakeMatches() {
+  const front = state.queue[0];
+
+  return LAYERS.every(layer => {
+    return state.selection[layer] === front.order[layer];
+  });
+}
+
+/* CUSTOMER TRANSITION */
+
+function resetSelection() {
+  state.selection = {
+    base:null,
+    frosting:null,
+    topping:null
+  };
+}
+
+function nextCustomer() {
+  if(!state.running) return;
+
+  state.queue.shift();
+  fillQueue();
+
+  state.orderTimeLeft = CONFIG.ORDER_SECONDS;
+  resetSelection();
+
+  renderQueue();
+  renderOrder();
+  renderCake();
+  renderTimers();
+}
+
+/* BAKING AND SERVING */
+
+function stopBaking() {
+  clearInterval(bakingInterval);
+  bakingInterval = null;
+  baking = false;
+
+  $("serve-btn").disabled = false;
+  $("serve-btn").textContent = "🧁 Bake & Serve";
+
+  $("cake-preview").classList.remove("serve");
+  $("cake-preview").style.transform = "";
+}
+
+function serve() {
+  if(!state.running || baking || !state.queue.length) return;
+
+  const incomplete = LAYERS.some(layer => !state.selection[layer]);
+
+  if(incomplete) {
+    toast("Please complete all three cake layers!",true);
+    playSound("wrong");
+    return;
+  }
+
+  if(!cakeMatches()) {
+    state.wrong++;
+    state.combo = 0;
+
+    changeScore(-CONFIG.POINTS_PENALTY);
+
+    toast("Oops! Wrong cake. Try again!",true);
+    playSound("wrong");
+
+    const preview = $("cake-preview");
+    preview.classList.remove("shake");
+    void preview.offsetWidth;
+    preview.classList.add("shake");
+
+    renderScore();
+    return;
+  }
+
+  baking = true;
+  $("serve-btn").disabled = true;
+  $("serve-btn").textContent = "🔥 Baking...";
+  $("oven-status").textContent = "🔥 Baking your cake...";
+  $("oven-status").classList.add("active");
+
+  playSound("bake");
+
+  const preview = $("cake-preview");
+  preview.style.transform = "scale(1.04)";
+
+  const bakeStart = Date.now();
+
+  bakingInterval = setInterval(() => {
+    if(!state || !state.running) {
+      clearInterval(bakingInterval);
+      return;
+    }
+
+    /* Do not complete a cake after its customer's timer has expired. */
+    if(state.orderTimeLeft <= 0) {
+      clearInterval(bakingInterval);
+      expireOrder();
+      return;
+    }
+
+    const remaining = Math.max(
+      0,
+      CONFIG.BAKE_SECONDS - (Date.now() - bakeStart) / 1000
+    );
+
+    $("oven-status").textContent =
+      "🔥 Baking... " + remaining.toFixed(1) + "s";
+
+    if(remaining <= 0) {
+      clearInterval(bakingInterval);
+      bakingInterval = null;
+      finishCake();
+    }
+  },100);
+}
+
+function finishCake() {
+  if(!state || !state.running || !baking) return;
+
+  /* Extra safety check in case the timer reaches zero at the same moment. */
+  if(state.orderTimeLeft <= 0) {
+    expireOrder();
+    return;
+  }
+
+  baking = false;
+
+  state.served++;
+  state.combo++;
+  state.bestCombo = Math.max(state.bestCombo,state.combo);
+
+  /* Official scoring: exactly 10 points per correct order. */
+  changeScore(CONFIG.POINTS_CORRECT);
+
+  /* Coins are a separate reward and never affect the score. */
+  addCoins(CONFIG.COINS_CORRECT);
+
+  playSound("success");
+  toast("🎉 Perfect cake! +10 points and +5 coins!");
+
+  $("oven-status").textContent = "✨ Freshly baked!";
+  $("oven-status").classList.remove("active");
+
+  $("cake-preview").classList.add("serve");
+
+  setTimeout(() => {
+    if(!state || !state.running) return;
+
+    $("cake-preview").classList.remove("serve");
+    $("cake-preview").style.transform = "";
+
+    $("serve-btn").disabled = false;
+    $("serve-btn").textContent = "🧁 Bake & Serve";
+
+    baking = false;
+    nextCustomer();
+
+    $("oven-status").textContent = "🧁 Ready to bake";
+  },500);
+}
+
+function expireOrder() {
+  if(!state || !state.running) return;
+
+  /* Cancel any cake currently being prepared. */
+  clearInterval(bakingInterval);
+  bakingInterval = null;
+  baking = false;
+
+  $("serve-btn").disabled = false;
+  $("serve-btn").textContent = "🧁 Bake & Serve";
+
+  $("cake-preview").classList.remove("serve");
+  $("cake-preview").style.transform = "";
+
+  state.expired++;
+  state.combo = 0;
+
+  changeScore(-CONFIG.POINTS_PENALTY);
+
+  playSound("wrong");
+  toast("😟 Customer left! -5 points",true);
+
+  $("oven-status").textContent = "🧁 Ready to bake";
+  $("oven-status").classList.remove("active");
+
+  nextCustomer();
+}
+
+/* END GAME */
+
+function endGame() {
+  if(!state || !state.running) return;
+
+  state.running = false;
+  baking = false;
+
+  clearInterval(timerId);
+  clearInterval(bakingInterval);
+
+  timerId = null;
+  bakingInterval = null;
+
+  $("serve-btn").disabled = false;
+  $("serve-btn").textContent = "🧁 Bake & Serve";
+
+  const newBest = state.score > bestScore;
+
+  if(newBest) {
+    bestScore = state.score;
+    saveProgress();
+  }
+
+  $("final-score").textContent = state.score;
+  $("new-best").classList.toggle("hidden",!newBest);
+
+  $("stat-served").textContent = state.served;
+  $("stat-wrong").textContent = state.wrong;
+  $("stat-lost").textContent = state.expired;
+
+  $("coins-earned").textContent = state.coinsEarned;
+  $("best-combo").textContent = state.bestCombo + "x";
+  $("total-coins").textContent = coins;
+
+  $("best-start").textContent = bestScore;
+
+  $("end-line").textContent =
+    state.served >= 5
+      ? "Amazing work, master baker! 🍰"
+      : "Every little baker starts somewhere! 💗";
+
+  $("end-cake").innerHTML = cakeSVG({
+    base:"strawberry",
+    frosting:"pink",
+    topping:"cherry"
+  });
+
+  updateCoinDisplay();
+  showScreen("end-screen");
+}
+
+/* STARTUP */
+
+function init() {
+  state = freshState();
+
+  $("info-game-seconds").textContent = CONFIG.GAME_SECONDS;
+  $("best-start").textContent = bestScore;
+
+  updateCoinDisplay();
+
+  $("title-cake").innerHTML = cakeSVG({
+    base:"strawberry",
+    frosting:"pink",
+    topping:"cherry"
+  });
+
+  $("start-btn").addEventListener("click",startGame);
+  $("again-btn").addEventListener("click",startGame);
+
+  $("serve-btn").addEventListener("click",serve);
+  $("clear-btn").addEventListener("click",clearCake);
+
+  $("recipe-btn-start").addEventListener("click",openRecipe);
+  $("recipe-btn-game").addEventListener("click",openRecipe);
+
+  $("recipe-close").addEventListener("click",closeRecipe);
+
+  /* Clicking the dark area outside the recipe card closes the modal. */
+  $("recipe-modal").addEventListener("click",event => {
+    if(event.target === $("recipe-modal")) closeRecipe();
+  });
+
+  buildChoiceButtons();
+  buildRecipeBook();
+  renderCake();
+}
+
+init();
+</script>
+
+</body>
+</html>
