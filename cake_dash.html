@@ -236,10 +236,14 @@ svg{display:block}
 .recipe-item .emoji svg{width:100%;height:100%;display:block}
 .recipe-item .owned .ic,.recipe-item button .ic{width:1em;height:1em}
 
-/* Phone fix: let the single column shrink so the customer queue scrolls
-   inside its card instead of stretching the whole page sideways */
+/* Phone layout (screens 960px wide or less, everything in one column):
+   - minmax(0,1fr) lets the customer queue scroll inside its card instead of
+     stretching the whole page sideways
+   - order:-1 moves the Current Order card to the very top, above the customers
+     and the cake workshop */
 @media(max-width:960px){
   .layout{grid-template-columns:minmax(0,1fr)}
+  .order-card{order:-1}
 }
 
 /* Pop-up message with an icon bubble */
@@ -247,6 +251,23 @@ svg{display:block}
 .toast-icon{width:30px;height:30px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:var(--pink)}
 .toast.bad .toast-icon{background:var(--butter)}
 .toast-icon .ic{width:18px;height:18px}
+
+
+/* =========================================
+   DIFFICULTY SELECTOR
+   ========================================= */
+.difficulty{margin-top:14px}
+.difficulty-title{margin:0 0 6px;font-size:.78rem;color:var(--brown-light);text-transform:uppercase;letter-spacing:.06em}
+.diff-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.diff-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:8px 4px;min-height:56px;background:var(--card);border:2px solid var(--border);border-radius:14px;cursor:pointer;color:var(--brown);font-family:var(--font-title);transition:.15s ease}
+.diff-btn b{font-weight:500;font-size:.9rem;line-height:1.1}
+.diff-btn small{font-family:var(--font-body);font-weight:800;font-size:.72rem;color:var(--brown-light)}
+.diff-btn:hover{transform:translateY(-2px);border-color:var(--pink)}
+.diff-btn.selected{background:var(--pink-soft);border-color:var(--strawberry);box-shadow:0 0 0 3px rgba(229,72,109,.15)}
+.diff-btn.selected small{color:var(--strawberry-d)}
+.mode-line{margin:6px 0 0;font-size:.85rem;color:var(--brown-light)}
+.mode-line b{color:var(--brown)}
+@media(max-width:420px){.diff-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 </style>
 </head>
@@ -345,8 +366,13 @@ svg{display:block}
 
     <p class="facts">
       <span class="chip"><span id="info-game-seconds">120</span>s round</span>
-      <span class="chip">30s per customer</span>
+      <span class="chip"><span id="info-order-seconds">20</span>s per customer</span>
     </p>
+
+    <div class="difficulty">
+      <p class="difficulty-title">Choose difficulty</p>
+      <div id="difficulty-options" class="diff-options" role="radiogroup" aria-label="Difficulty"></div>
+    </div>
 
     <div class="reward-panel">
       <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Your coins</small><b id="start-coins">0</b></div>
@@ -442,7 +468,7 @@ svg{display:block}
       </div>
 
       <div class="patience-label">
-        <span>Customer patience</span>
+        <span>Customer patience &middot; <span id="mode-tag"></span></span>
         <b id="patience-text">30s</b>
       </div>
 
@@ -483,6 +509,8 @@ svg{display:block}
     <p id="final-score" class="final-score">0</p>
     <p id="new-best" class="new-best hidden"><svg class="ic" aria-hidden="true"><use href="#i-trophy"/></svg> New best score!</p>
 
+    <p class="mode-line"><b id="end-mode">Normal</b> mode &middot; <b id="end-seconds">20</b>s per customer &middot; Best <b id="end-best">0</b></p>
+
     <div class="stat-row">
       <div class="stat"><b id="stat-served">0</b><span>Cakes served</span></div>
       <div class="stat"><b id="stat-wrong">0</b><span>Wrong cakes</span></div>
@@ -498,6 +526,7 @@ svg{display:block}
 
     <div class="actions">
       <button id="again-btn" class="btn btn-primary">Play Again</button>
+      <button id="menu-btn" class="btn btn-soft">Change difficulty</button>
     </div>
   </div>
 </section>
@@ -524,13 +553,22 @@ svg{display:block}
 
 const CONFIG = {
   GAME_SECONDS:120,
-  ORDER_SECONDS:15,
   POINTS_CORRECT:10,
   POINTS_PENALTY:5,
   QUEUE_SIZE:4,
   COINS_CORRECT:5,
   UNLOCK_COST:10,
   BAKE_SECONDS:1.5
+};
+
+/* DIFFICULTY MODES
+   Seconds each customer waits before leaving. To add a mode, add one line.
+   The buttons on the start screen appear in this order. */
+const DIFFICULTIES = {
+  easy:   {label:"Easy",       seconds:25},
+  normal: {label:"Normal",     seconds:20},
+  hard:   {label:"Hard",       seconds:15},
+  super:  {label:"Super Hard", seconds:10}
 };
 
 /* INGREDIENT DATABASE */
@@ -608,7 +646,21 @@ function readSavedObject(key) {
 }
 
 let coins = readSavedNumber("cakeDashCoins");
-let bestScore = readSavedNumber("cakeDashBest");
+let bestScores = readSavedObject("cakeDashBestByMode");
+
+/* Old saves had one best score: count it as the Normal best. */
+if(bestScores.normal === undefined && readSavedNumber("cakeDashBest") > 0) {
+  bestScores.normal = readSavedNumber("cakeDashBest");
+}
+
+let difficulty = "normal";
+try {
+  const savedMode = localStorage.getItem("cakeDashDifficulty");
+  if(DIFFICULTIES[savedMode]) difficulty = savedMode;
+} catch(error) {}
+
+function orderSeconds() { return DIFFICULTIES[difficulty].seconds; }
+function bestForMode()  { return Number(bestScores[difficulty]) || 0; }
 let unlocked = readSavedObject("cakeDashUnlocked");
 
 LAYERS.forEach(layer => {
@@ -624,7 +676,8 @@ function isUnlocked(layer,id) {
 function saveProgress() {
   try {
     localStorage.setItem("cakeDashCoins",coins);
-    localStorage.setItem("cakeDashBest",bestScore);
+    localStorage.setItem("cakeDashBestByMode",JSON.stringify(bestScores));
+    localStorage.setItem("cakeDashDifficulty",difficulty);
     localStorage.setItem("cakeDashUnlocked",JSON.stringify(unlocked));
   } catch(error) {
     console.warn("Progress could not be saved.");
@@ -649,7 +702,7 @@ function freshState() {
     running:false,
     score:0,
     gameTimeLeft:CONFIG.GAME_SECONDS,
-    orderTimeLeft:CONFIG.ORDER_SECONDS,
+    orderTimeLeft:orderSeconds(),
     queue:[],
     selection:{base:null,frosting:null,topping:null},
     served:0,
@@ -1240,7 +1293,7 @@ function renderTimers() {
 
   const percent = Math.max(
     0,
-    state.orderTimeLeft / CONFIG.ORDER_SECONDS * 100
+    state.orderTimeLeft / orderSeconds() * 100
   );
 
   $("order-bar").style.width = percent + "%";
@@ -1271,6 +1324,8 @@ function startGame() {
   state = freshState();
   state.running = true;
   baking = false;
+
+  $("mode-tag").textContent = DIFFICULTIES[difficulty].label;
   nextCustomerId = 1;
 
   fillQueue();
@@ -1370,7 +1425,7 @@ function nextCustomer() {
   state.queue.shift();
   fillQueue();
 
-  state.orderTimeLeft = CONFIG.ORDER_SECONDS;
+  state.orderTimeLeft = orderSeconds();
   resetSelection();
 
   renderQueue();
@@ -1553,15 +1608,19 @@ function endGame() {
   $("serve-btn").disabled = false;
   setServeLabel(false);
 
-  const newBest = state.score > bestScore;
+  const newBest = state.score > bestForMode();
 
   if(newBest) {
-    bestScore = state.score;
+    bestScores[difficulty] = state.score;
     saveProgress();
   }
 
   $("final-score").textContent = state.score;
   $("new-best").classList.toggle("hidden",!newBest);
+
+  $("end-mode").textContent = DIFFICULTIES[difficulty].label;
+  $("end-seconds").textContent = orderSeconds();
+  $("end-best").textContent = bestForMode();
 
   $("stat-served").textContent = state.served;
   $("stat-wrong").textContent = state.wrong;
@@ -1571,7 +1630,7 @@ function endGame() {
   $("best-combo").textContent = state.bestCombo + "x";
   $("total-coins").textContent = coins;
 
-  $("best-start").textContent = bestScore;
+  renderBest();
 
   $("end-line").textContent =
     state.served >= 5
@@ -1588,13 +1647,59 @@ function endGame() {
   showScreen("end-screen");
 }
 
+/* DIFFICULTY SELECTOR */
+
+function renderBest() {
+  $("best-start").textContent = bestForMode();
+}
+
+/* Highlights the chosen mode and updates the numbers that depend on it. */
+function renderDifficulty() {
+  document.querySelectorAll(".diff-btn").forEach(button => {
+    const chosen = button.dataset.mode === difficulty;
+    button.classList.toggle("selected",chosen);
+    button.setAttribute("aria-checked",chosen);
+  });
+
+  $("info-order-seconds").textContent = orderSeconds();
+  renderBest();
+}
+
+function setDifficulty(mode) {
+  if(!DIFFICULTIES[mode]) return;
+
+  difficulty = mode;
+  saveProgress();
+  renderDifficulty();
+  playSound("select");
+}
+
+/* Builds one button per entry in DIFFICULTIES (done once). */
+function buildDifficultyButtons() {
+  const container = $("difficulty-options");
+  container.innerHTML = "";
+
+  Object.keys(DIFFICULTIES).forEach(mode => {
+    const button = document.createElement("button");
+    button.className = "diff-btn";
+    button.dataset.mode = mode;
+    button.setAttribute("role","radio");
+    button.innerHTML = `<b>${DIFFICULTIES[mode].label}</b><small>${DIFFICULTIES[mode].seconds}s</small>`;
+    button.addEventListener("click",() => setDifficulty(mode));
+    container.appendChild(button);
+  });
+}
+
 /* STARTUP */
 
 function init() {
   state = freshState();
 
   $("info-game-seconds").textContent = CONFIG.GAME_SECONDS;
-  $("best-start").textContent = bestScore;
+
+  buildDifficultyButtons();
+  renderDifficulty();
+  renderBest();
 
   updateCoinDisplay();
 
@@ -1606,6 +1711,10 @@ function init() {
 
   $("start-btn").addEventListener("click",startGame);
   $("again-btn").addEventListener("click",startGame);
+  $("menu-btn").addEventListener("click",() => {
+    renderDifficulty();
+    showScreen("start-screen");
+  });
 
   $("serve-btn").addEventListener("click",serve);
   $("clear-btn").addEventListener("click",clearCake);
