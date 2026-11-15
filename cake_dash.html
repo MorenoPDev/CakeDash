@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -205,13 +204,131 @@ svg{display:block}
   .stat-row{gap:5px}
   .stat span{font-size:.65rem}
 }
+
+/* =========================================
+   SVG ARTWORK STYLES
+   ========================================= */
+
+/* Small inline icons (they grow with the surrounding text size) */
+.ic{width:1.1em;height:1.1em;display:inline-block;vertical-align:-.2em;flex-shrink:0}
+.btn .ic{width:1.25em;height:1.25em}
+
+/* Icons that sit alone in a box: fill the box instead of flowing like text */
+.pill-icon .ic,.logo .ic,.decor .ic,.stage-decoration .ic{display:block;width:1em;height:1em;vertical-align:baseline}
+
+/* Customer faces */
+.customer-face svg,.order-face svg{width:100%;height:100%;display:block}
+
+/* Ingredient cards */
+.swatch{width:42px;height:42px;display:block}
+.swatch svg{width:100%;height:100%;display:block;transition:transform .2s ease}
+.choice:hover .swatch svg{transform:scale(1.1) rotate(-3deg)}
+.choice.selected .swatch svg{animation:bob 1.6s ease-in-out infinite}
+.choice small .ic{width:1em;height:1em}
+
+/* Order ticket */
+.order-icon{width:34px;height:34px;flex-shrink:0}
+.order-icon svg{width:100%;height:100%;display:block}
+.order-list .check{display:inline-flex}
+
+/* Recipe book */
+.recipe-item .emoji{width:42px;height:42px;font-size:inherit}
+.recipe-item .emoji svg{width:100%;height:100%;display:block}
+.recipe-item .owned .ic,.recipe-item button .ic{width:1em;height:1em}
+
+/* Phone fix: let the single column shrink so the customer queue scrolls
+   inside its card instead of stretching the whole page sideways */
+@media(max-width:960px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Pop-up message with an icon bubble */
+.toast{display:flex;align-items:center;gap:10px}
+.toast-icon{width:30px;height:30px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:var(--pink)}
+.toast.bad .toast-icon{background:var(--butter)}
+.toast-icon .ic{width:18px;height:18px}
+
 </style>
 </head>
 
 <body>
+<!-- ============================================================
+     ICON SPRITE SHEET
+     Small SVG icons used all over the game. Each one is a <symbol>.
+     To use one anywhere in the HTML:  <svg class="ic"><use href="#i-star"/></svg>
+     To use one in JavaScript:         ic("star")
+     To add a new icon: copy a <symbol>, change its id (i-something) and its drawing.
+     ============================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-cupcake" viewBox="0 0 48 48">
+      <path d="M11 25h26l-3 17q-.5 2.5-3 2.5H17q-2.5 0-3-2.5z" fill="#e8b98f" stroke="#6e4a3a" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M19 28l1.5 14M24 28v14M29 28l-1.5 14" stroke="#6e4a3a" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <path d="M8 26q0-7 7-8 0-7 9-7t9 7q7 1 7 8z" fill="#ffc9d9" stroke="#6e4a3a" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="24" cy="9" r="4.5" fill="#e5486d" stroke="#6e4a3a" stroke-width="2.5"/>
+      <path d="M24 5q1-3 4-4" stroke="#6e4a3a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-slice" viewBox="0 0 24 24">
+      <path d="M3 20V12L21 8v12q0 1-1 1H4q-1 0-1-1z" fill="#ffc9d9" stroke="#6e4a3a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M3 15.5L21 13" stroke="#6e4a3a" stroke-width="1.6" opacity=".45"/>
+      <circle cx="8" cy="8.6" r="2.6" fill="#e5486d" stroke="#6e4a3a" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="M12 2.5l2.8 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.2 6.1 20.6l1.3-6.6L2.5 9.4l6.7-.8z" fill="#ffd98a" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 21s-8.5-5.3-8.5-11.2A4.6 4.6 0 0 1 12 7.4a4.6 4.6 0 0 1 8.5 2.4C20.5 15.7 12 21 12 21z" fill="#ffb3c8" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-berry" viewBox="0 0 24 24">
+      <path d="M12 22C5 20 4 11 12 8c8 3 7 12 0 14z" fill="#e5486d" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M6.5 8l5.5-4 5.5 4-5.5 2z" fill="#9ed6b0" stroke="#6e4a3a" stroke-width="1.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24">
+      <path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" fill="#ffd98a" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="13" r="8" fill="#fff" stroke="#6e4a3a" stroke-width="2"/>
+      <path d="M12 8.5V13l3 2M9 3h6" stroke="#6e4a3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="#ffd98a" stroke="#6e4a3a" stroke-width="2"/>
+      <circle cx="12" cy="12" r="5.5" fill="none" stroke="#6e4a3a" stroke-width="1.6" opacity=".45"/>
+      <path d="M9.5 9.5h2.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M4 5q4-1.5 8 1 4-2.5 8-1v13q-4-1.5-8 1-4-2.5-8-1z" fill="#fff" stroke="#6e4a3a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12 6v13" stroke="#6e4a3a" stroke-width="2"/>
+      <path d="M6.5 9.5q2-.5 3 .3M6.5 12.5q2-.5 3 .3" stroke="#e5486d" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="#6e4a3a" stroke-width="2" stroke-linecap="round"/>
+      <rect x="5" y="11" width="14" height="10" rx="3" fill="#e9d8c8" stroke="#6e4a3a" stroke-width="2"/>
+      <circle cx="12" cy="16" r="1.6" fill="#6e4a3a"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24">
+      <path d="M12 2C13 6 18 8 18 14A6 6 0 0 1 6 14C6 11 8 10 9 8c.5 2 1.5 2.5 2.5 2.5C11 8 11 5 12 2z" fill="#ff9b6b" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M12 21a3 3 0 0 1-3-3c0-2 2-3 3-5 1 2 3 3 3 5a3 3 0 0 1-3 3z" fill="#ffd98a"/>
+    </symbol>
+    <symbol id="i-oops" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9.5" fill="#fff3d1" stroke="#6e4a3a" stroke-width="1.8"/>
+      <circle cx="8.5" cy="10.5" r="1.3" fill="#6e4a3a"/>
+      <circle cx="15.5" cy="10.5" r="1.3" fill="#6e4a3a"/>
+      <path d="M8.5 16.5q3.5-3 7 0" fill="none" stroke="#6e4a3a" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24">
+      <path d="M7 3h10v5a5 5 0 0 1-10 0z" fill="#ffd98a" stroke="#6e4a3a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M7 5H4q0 5 4 5M17 5h3q0 5-4 5" fill="none" stroke="#6e4a3a" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M12 13v4M9.5 17h5M8 21h8" stroke="#6e4a3a" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
 
 <div class="decor" aria-hidden="true">
-  <span>⭐</span><span>💗</span><span>🍓</span><span>✨</span>
+  <span><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg></span><span><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></span><span><svg class="ic" aria-hidden="true"><use href="#i-berry"/></svg></span><span><svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
 </div>
 
 <section id="start-screen" class="screen active">
@@ -232,23 +349,23 @@ svg{display:block}
     </p>
 
     <div class="reward-panel">
-      <div><small>💰 Your coins</small><b id="start-coins">0</b></div>
-      <div><small>⭐ Best score</small><b id="best-start">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Your coins</small><b id="start-coins">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Best score</small><b id="best-start">0</b></div>
     </div>
 
     <div class="actions">
       <button id="start-btn" class="btn btn-primary">Start Baking</button>
-      <button id="recipe-btn-start" class="btn btn-soft">📖 Recipe Book</button>
+      <button id="recipe-btn-start" class="btn btn-soft"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Recipe Book</button>
     </div>
 
-    <p class="best-line">Welcome to your little bakery! 🍰</p>
+    <p class="best-line">Welcome to your little bakery! <svg class="ic" aria-hidden="true"><use href="#i-slice"/></svg></p>
   </div>
 </section>
 
 <section id="game-screen" class="screen">
   <header class="topbar">
     <div class="brand">
-      <div class="logo">🧁</div>
+      <div class="logo"><svg class="ic" aria-hidden="true"><use href="#i-cupcake"/></svg></div>
       <div class="brand-text">
         <h1>Cake Dash</h1>
         <span>The Little Bakery Rush</span>
@@ -257,15 +374,15 @@ svg{display:block}
 
     <div class="hud">
       <div class="pill" id="timer-pill">
-        <span class="pill-icon">⏰</span>
+        <span class="pill-icon"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg></span>
         <span class="pill-text"><small>Time left</small><b id="game-timer">2:00</b></span>
       </div>
       <div class="pill">
-        <span class="pill-icon">⭐</span>
+        <span class="pill-icon"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg></span>
         <span class="pill-text"><small>Score</small><b id="score">0</b></span>
       </div>
       <div class="pill">
-        <span class="pill-icon">🪙</span>
+        <span class="pill-icon"><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg></span>
         <span class="pill-text"><small>Coins</small><b id="coins">0</b></span>
       </div>
     </div>
@@ -274,24 +391,24 @@ svg{display:block}
   <main class="layout">
     <aside class="card queue-card">
       <h2 class="card-title">Customers</h2>
-      <p class="modal-note">Your customers are waiting! 💗</p>
+      <p class="modal-note">Your customers are waiting! <svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></p>
       <div id="queue" class="queue"></div>
-      <div class="customer-note">😊 Serve customers correctly to earn coins and rewards!</div>
+      <div class="customer-note"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg> Serve customers correctly to earn coins and rewards!</div>
     </aside>
 
     <section class="card workshop">
       <div class="workshop-head">
         <h2 class="card-title">Cake Workshop</h2>
-        <button id="recipe-btn-game" class="btn btn-soft btn-small">📖 Recipe Book</button>
+        <button id="recipe-btn-game" class="btn btn-soft btn-small"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Recipe Book</button>
       </div>
 
-      <div class="bakery-label">🍰 LITTLE BAKERY • PREPARATION COUNTER</div>
+      <div class="bakery-label"><svg class="ic" aria-hidden="true"><use href="#i-slice"/></svg> LITTLE BAKERY • PREPARATION COUNTER</div>
 
       <div id="cake-stage" class="cake-stage">
-        <span class="stage-decoration left">✨</span>
+        <span class="stage-decoration left"><svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
         <div id="cake-preview" class="cake-preview"></div>
-        <span class="stage-decoration right">🍓</span>
-        <div id="oven-status" class="oven-status">🧁 Ready to bake</div>
+        <span class="stage-decoration right"><svg class="ic" aria-hidden="true"><use href="#i-berry"/></svg></span>
+        <div id="oven-status" class="oven-status"><svg class="ic" aria-hidden="true"><use href="#i-cupcake"/></svg> Ready to bake</div>
       </div>
 
       <div class="section">
@@ -311,13 +428,13 @@ svg{display:block}
 
       <div class="actions">
         <button id="clear-btn" class="btn btn-ghost">Clear</button>
-        <button id="serve-btn" class="btn btn-primary">🧁 Bake & Serve</button>
+        <button id="serve-btn" class="btn btn-primary"><svg class="ic" aria-hidden="true"><use href="#i-cupcake"/></svg> Bake & Serve</button>
       </div>
     </section>
 
     <aside id="order-card" class="card order-card">
       <div class="order-head">
-        <div id="order-face" class="order-face">😊</div>
+        <div id="order-face" class="order-face"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></div>
         <div>
           <h2 class="card-title">Current Order</h2>
           <span id="order-name" class="order-sub">Now serving</span>
@@ -334,14 +451,14 @@ svg{display:block}
         <span id="order-timer-text" class="order-timer-text">30s</span>
       </div>
 
-      <p id="hurry-chip" class="hurry-chip hidden">😟 Hurry! Customer is getting impatient!</p>
+      <p id="hurry-chip" class="hurry-chip hidden"><svg class="ic" aria-hidden="true"><use href="#i-oops"/></svg> Hurry! Customer is getting impatient!</p>
 
       <p style="font-size:.82rem;color:var(--brown-light);margin-top:16px">Customer's request:</p>
       <ul id="order-list" class="order-list"></ul>
 
       <div class="reward-panel">
-        <div><small>⭐ Combo streak</small><b id="combo">0x</b></div>
-        <div><small>🪙 Correct order</small><b>+5 coins</b></div>
+        <div><small><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Combo streak</small><b id="combo">0x</b></div>
+        <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Correct order</small><b>+5 coins</b></div>
       </div>
 
       <div class="progress-area">
@@ -364,7 +481,7 @@ svg{display:block}
 
     <p class="final-label">Final score</p>
     <p id="final-score" class="final-score">0</p>
-    <p id="new-best" class="new-best hidden">🏆 New best score!</p>
+    <p id="new-best" class="new-best hidden"><svg class="ic" aria-hidden="true"><use href="#i-trophy"/></svg> New best score!</p>
 
     <div class="stat-row">
       <div class="stat"><b id="stat-served">0</b><span>Cakes served</span></div>
@@ -373,8 +490,8 @@ svg{display:block}
     </div>
 
     <div class="reward-panel">
-      <div><small>🪙 Coins earned</small><b id="coins-earned">0</b></div>
-      <div><small>⭐ Best combo</small><b id="best-combo">0x</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Coins earned</small><b id="coins-earned">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Best combo</small><b id="best-combo">0x</b></div>
     </div>
 
     <p class="best-line">Total coins: <strong id="total-coins">0</strong></p>
@@ -387,12 +504,12 @@ svg{display:block}
 
 <div id="recipe-modal" class="modal hidden">
   <div class="card modal-box">
-    <h2 class="card-title big">📖 Recipe Book</h2>
+    <h2 class="card-title big"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Recipe Book</h2>
     <p class="modal-note">Discover ingredients and unlock new flavors for your bakery!</p>
 
     <div class="reward-panel">
-      <div><small>🪙 Available coins</small><b id="shop-coins">0</b></div>
-      <div><small>🍰 Available ingredients</small><b id="ingredient-count">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Available coins</small><b id="shop-coins">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-slice"/></svg> Available ingredients</small><b id="ingredient-count">0</b></div>
     </div>
 
     <div id="recipe-content"></div>
@@ -468,7 +585,7 @@ const CUSTOMER_NAMES = [
   "Leo","Ava","Theo","Bella","Ellie","Milo","Daisy","Lily"
 ];
 
-const CUSTOMER_FACES = ["👩🏻","👩🏽","👨🏻","👧🏼","👦🏽","👩🏾","👨🏼","👧🏻","👩🏼","🧑🏻"];
+/* Customer faces are drawn as SVG now: see randomLook() and customerSVG(). */
 
 /* SAVED PROGRESS */
 
@@ -552,6 +669,220 @@ function findItem(layer,id) {
   return INGREDIENTS[layer].find(item => item.id === id);
 }
 
+/* =========================================
+   SVG ARTWORK
+   Every picture in the game is drawn here as SVG:
+   customers, ingredient cards, cake toppings and small icons.
+   ========================================= */
+
+const LINE = "#6e4a3a";   /* outline color shared by all drawings */
+
+/* A small icon from the sprite sheet at the top of the page.
+   Example: ic("star") gives you the star icon. */
+function ic(name) {
+  return `<svg class="ic" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+}
+
+/* ---------- CUSTOMERS ----------
+   Each customer gets a random look made from these lists.
+   Add a color to a list (or a new style in customerSVG) to get more variety. */
+const SKIN_TONES   = ["#ffe0c2","#f6cba3","#d9a074","#a8704a","#7b4f35"];
+const HAIR_COLORS  = ["#3b2418","#7a4524","#d9a13b","#d94f7a","#5a6fd1","#2e2a3a"];
+const HAIR_STYLES  = ["bun","pigtails","bob","short"];
+const ACCESSORIES  = ["none","none","glasses","bow"];
+
+function randomLook() {
+  return {
+    skin:pick(SKIN_TONES),
+    hair:pick(HAIR_COLORS),
+    style:pick(HAIR_STYLES),
+    acc:pick(ACCESSORIES)
+  };
+}
+
+function customerSVG(customer) {
+  const look = customer.look;
+  const o = `stroke="${LINE}" stroke-width="2.5" stroke-linejoin="round"`;
+
+  /* hair drawn behind the face */
+  let behind = "";
+  if(look.style === "bun") {
+    behind = `<circle cx="32" cy="9" r="7" fill="${look.hair}" ${o}/>`;
+  } else if(look.style === "pigtails") {
+    behind = `<circle cx="9" cy="38" r="7" fill="${look.hair}" ${o}/>
+              <circle cx="55" cy="38" r="7" fill="${look.hair}" ${o}/>`;
+  } else if(look.style === "bob") {
+    behind = `<path d="M11 42Q8 10 32 9Q56 10 53 42Q53 50 46 50H18Q11 50 11 42Z" fill="${look.hair}" ${o}/>`;
+  }
+
+  /* hair drawn in front of the forehead */
+  const fringe = look.style === "short"
+    ? `<path d="M13 31Q13 10 32 10Q51 10 51 31Q47 24 40 21Q30 25 22 20Q16 23 13 31Z" fill="${look.hair}" ${o}/>`
+    : `<path d="M13 33Q12 11 32 11Q52 11 51 33Q46 22 36 22Q28 27 20 22Q15 24 13 33Z" fill="${look.hair}" ${o}/>`;
+
+  let accessory = "";
+  if(look.acc === "glasses") {
+    accessory = `<g fill="rgba(255,255,255,.35)" stroke="${LINE}" stroke-width="2">
+                   <circle cx="25" cy="37" r="6"/><circle cx="39" cy="37" r="6"/>
+                   <path d="M31 37h2" fill="none"/>
+                 </g>`;
+  } else if(look.acc === "bow") {
+    accessory = `<g fill="#ff8fb8" stroke="${LINE}" stroke-width="2" stroke-linejoin="round">
+                   <path d="M19 14L10 9V19Z"/><path d="M19 14L28 9V19Z"/><circle cx="19" cy="14" r="3"/>
+                 </g>`;
+  }
+
+  return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    ${behind}
+    <circle cx="32" cy="36" r="19" fill="${look.skin}" ${o}/>
+    ${fringe}
+    <circle cx="25" cy="37" r="2.4" fill="#3b2418"/><circle cx="39" cy="37" r="2.4" fill="#3b2418"/>
+    <circle cx="25.8" cy="36.2" r=".8" fill="#fff"/><circle cx="39.8" cy="36.2" r=".8" fill="#fff"/>
+    <circle cx="20" cy="43" r="3.6" fill="#ff9db3" opacity=".6"/><circle cx="44" cy="43" r="3.6" fill="#ff9db3" opacity=".6"/>
+    <path d="M28 44Q32 48 36 44" stroke="#3b2418" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    ${accessory}
+  </svg>`;
+}
+
+/* ---------- TOPPINGS ----------
+   Each topping is drawn in a 48 x 48 box with its bottom edge near y = 44.
+   The same drawing is used on the cake, on the ingredient card, in the
+   order ticket and in the recipe book.
+   To add a topping: add it to INGREDIENTS, then add a  case "your-id":  below. */
+function toppingArt(id,color) {
+  const o = `stroke="${LINE}" stroke-width="2.5" stroke-linejoin="round"`;
+
+  switch(id) {
+
+    case "cherry":
+      return `<path d="M24 20Q26 9 37 6" stroke="#3b8a3b" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <circle cx="24" cy="31" r="13" fill="${color}" ${o}/>
+              <circle cx="19" cy="26" r="3.5" fill="#fff" opacity=".6"/>`;
+
+    case "strawberry":
+      return `<path d="M24 44C8 37 7 17 24 15C41 17 40 37 24 44Z" fill="${color}" ${o}/>
+              <path d="M13 16L24 8L35 16L24 20Z" fill="#7ccf8f" ${o}/>
+              <g fill="#ffe3a0">
+                <ellipse cx="17" cy="26" rx="1.6" ry="2.2"/><ellipse cx="31" cy="26" rx="1.6" ry="2.2"/>
+                <ellipse cx="24" cy="31" rx="1.6" ry="2.2"/><ellipse cx="18" cy="35" rx="1.6" ry="2.2"/>
+                <ellipse cx="30" cy="35" rx="1.6" ry="2.2"/>
+              </g>`;
+
+    case "sprinkles": {
+      /* [x, y, rotation, color] for each little rod */
+      const bits = [[14,30,-30,"#ffd66b"],[27,21,25,"#6bd6ff"],[35,34,60,"#ff6b9d"],[20,40,10,"#9bd9b4"],
+                    [37,21,-50,"#ffffff"],[9,40,50,"#ff6b9d"],[31,42,-20,"#ffd66b"],[24,32,80,"#6bd6ff"]];
+      return bits.map(b =>
+        `<rect x="${b[0]-6}" y="${b[1]-2.2}" width="12" height="4.4" rx="2.2" fill="${b[3]}" stroke="${LINE}" stroke-width="1.4" transform="rotate(${b[2]} ${b[0]} ${b[1]})"/>`
+      ).join("");
+    }
+
+    case "blueberry": {
+      const berries = [[23.5,22],[15,36],[32,36]];
+      return berries.map(b =>
+        `<circle cx="${b[0]}" cy="${b[1]}" r="8.5" fill="${color}" ${o}/>
+         <circle cx="${b[0]}" cy="${b[1]-2}" r="2.4" fill="rgba(0,0,0,.25)"/>
+         <circle cx="${b[0]-3}" cy="${b[1]-4.5}" r="1.6" fill="#fff" opacity=".55"/>`
+      ).join("");
+    }
+
+    case "banana": {
+      const slices = [[24,20],[15,34],[33,34]];
+      return slices.map(b =>
+        `<circle cx="${b[0]}" cy="${b[1]}" r="10" fill="${color}" ${o}/>
+         <circle cx="${b[0]}" cy="${b[1]}" r="6" fill="#fff1b8"/>
+         <circle cx="${b[0]}" cy="${b[1]}" r="1.4" fill="#b58a2c"/>`
+      ).join("");
+    }
+
+    case "oreo":
+      return `<g transform="rotate(-10 24 32)">
+                <rect x="9" y="29" width="30" height="6" rx="3" fill="#fff8ee" ${o}/>
+                <rect x="7" y="20" width="34" height="10" rx="5" fill="${color}" ${o}/>
+                <rect x="7" y="34" width="34" height="10" rx="5" fill="${color}" ${o}/>
+                <path d="M14 24H26M14 39H24" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/>
+              </g>`;
+
+    case "almonds": {
+      const almond = (x,y,rot) =>
+        `<g transform="translate(${x} ${y}) rotate(${rot} 8 11)">
+           <path d="M8 0C17 5 17 17 8 22C-1 17 -1 5 8 0Z" fill="${color}" ${o}/>
+           <path d="M8 5Q10 11 8 17" stroke="rgba(255,255,255,.45)" stroke-width="2" fill="none" stroke-linecap="round"/>
+         </g>`;
+      return almond(16,15,0) + almond(4,22,-25) + almond(27,22,25);
+    }
+
+    case "chips": {
+      const chip = (x,y,rot) =>
+        `<g transform="translate(${x} ${y}) rotate(${rot} 8 6)">
+           <path d="M0 12Q1 3 8 0Q15 3 16 12Q8 15 0 12Z" fill="${color}" stroke="#3d2417" stroke-width="2" stroke-linejoin="round"/>
+           <path d="M5 9Q8 5 11 9" stroke="rgba(255,255,255,.4)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+         </g>`;
+      /* scattered flat so they read as chips, not a pile */
+      return chip(9,16,-10) + chip(24,15,15) + chip(2,29,-25) + chip(16,29,8) + chip(30,27,25);
+    }
+
+    case "marshmallow":
+      return `<g transform="rotate(14 33 24)">
+                <rect x="25" y="16" width="16" height="16" rx="6.5" fill="${color}" ${o}/>
+                <path d="M28 29Q33 32 38 29" stroke="#ffc9d9" stroke-width="3" fill="none" stroke-linecap="round"/>
+              </g>
+              <rect x="8" y="26" width="17" height="17" rx="7" fill="${color}" ${o}/>
+              <path d="M11 39Q16.5 42 22 39" stroke="#ffc9d9" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M12 31H17" stroke="#ffc9d9" stroke-width="2.5" stroke-linecap="round"/>`;
+
+    case "peach":
+      return `<circle cx="24" cy="29" r="14.5" fill="${color}" ${o}/>
+              <circle cx="31" cy="34" r="6" fill="#ff9d8a" opacity=".5"/>
+              <path d="M24 15Q17 29 24 43" stroke="rgba(110,74,58,.45)" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M24 15Q31 4 40 9Q34 17 24 15Z" fill="#7ccf8f" ${o}/>`;
+
+    case "macaron":
+      return `<path d="M7 26Q7 13 24 13Q41 13 41 26Z" fill="${color}" ${o}/>
+              <path d="M7 32H41Q41 44 24 44Q7 44 7 32Z" fill="${color}" ${o}/>
+              <rect x="7" y="26" width="34" height="6" rx="3" fill="#fff8ee" ${o}/>
+              <path d="M15 20Q19 16 25 16" stroke="rgba(255,255,255,.6)" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+
+    default:
+      /* any topping without its own drawing becomes a simple colored ball */
+      return `<circle cx="24" cy="30" r="13" fill="${color}" ${o}/>
+              <circle cx="19" cy="25" r="3.5" fill="#fff" opacity=".5"/>`;
+  }
+}
+
+/* ---------- INGREDIENT CARD PICTURES ----------
+   Bases and frostings are drawn from the item's color, so a new base or
+   frosting in INGREDIENTS automatically gets a picture. */
+function ingredientIcon(layer,item) {
+  const o = `stroke="${LINE}" stroke-width="2.5" stroke-linejoin="round"`;
+  let art = "";
+
+  if(layer === "base") {
+    art = `<path d="M5 20Q5 12 13 12H35Q43 12 43 20V37Q43 43 37 43H11Q5 43 5 37Z" fill="${item.color}" ${o}/>
+           <path d="M7 29H41" stroke="#fff" stroke-width="4" opacity=".5"/>
+           <path d="M12 19H22" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".4"/>`;
+  } else if(layer === "frosting") {
+    /* dripping icing, the same style as the frosting on the cake */
+    art = `<path d="M6 16Q6 10 12 10H36Q42 10 42 16Q42 21 38 21Q37 31 33 31Q29 31 29 22H27Q26 36 22 36Q18 36 18 23H16Q15 29 11 29Q8 29 8 21Q6 20 6 16Z" fill="${item.color}" ${o}/>
+           <path d="M12 15H22" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/>`;
+  } else {
+    art = toppingArt(item.id,item.color);
+  }
+
+  return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${art}</svg>`;
+}
+
+/* ---------- BUTTON AND OVEN LABELS (text + icon) ---------- */
+function setServeLabel(isBaking) {
+  $("serve-btn").innerHTML = isBaking
+    ? ic("flame") + " Baking..."
+    : ic("cupcake") + " Bake &amp; Serve";
+}
+
+function setOven(icon,text) {
+  $("oven-status").innerHTML = ic(icon) + " " + text;
+}
+
 /* AUDIO EFFECTS */
 
 let audioContext = null;
@@ -615,7 +946,7 @@ function formatTime(seconds) {
 
 function toast(message,bad=false) {
   const element = $("toast");
-  element.textContent = message;
+  element.innerHTML = `<span class="toast-icon">${ic(bad ? "oops" : "sparkle")}</span><span>${message}</span>`;
   element.classList.toggle("bad",bad);
   element.classList.remove("show");
   void element.offsetWidth;
@@ -662,7 +993,7 @@ function cakeSVG(selection) {
   }
 
   if(topping) {
-    html += `<text x="100" y="75" font-size="37" text-anchor="middle" dominant-baseline="middle">${topping.emoji}</text>`;
+    html += `<g transform="translate(73.6 33.6) scale(1.1)">${toppingArt(topping.id,topping.color)}</g>`;
   } else {
     html += `<circle cx="100" cy="66" r="12" fill="none" stroke="#c9ad98" stroke-width="3" stroke-dasharray="5 5"/>`;
   }
@@ -677,7 +1008,7 @@ function makeCustomer() {
   return {
     id:nextCustomerId++,
     name:pick(CUSTOMER_NAMES),
-    face:pick(CUSTOMER_FACES),
+    look:randomLook(),
     order:{
       base:pick(availableIngredients("base")).id,
       frosting:pick(availableIngredients("frosting")).id,
@@ -701,7 +1032,7 @@ function renderQueue() {
     div.className = "customer" + (index === 0 ? " front" : "");
 
     div.innerHTML = `
-      <div class="customer-face">${customer.face}</div>
+      <div class="customer-face">${customerSVG(customer)}</div>
       <div class="who">
         <b>${customer.name}</b>
         <small>${index === 0 ? "Now serving!" : "Waiting in line"}</small>
@@ -718,7 +1049,7 @@ function renderOrder() {
   const front = state.queue[0];
   if(!front) return;
 
-  $("order-face").textContent = front.face;
+  $("order-face").innerHTML = customerSVG(front);
   $("order-name").textContent = front.name + "'s order";
 
   const list = $("order-list");
@@ -732,9 +1063,9 @@ function renderOrder() {
     if(complete) li.classList.add("done");
 
     li.innerHTML = `
-      <span class="order-emoji">${item.emoji}</span>
+      <span class="order-icon">${ingredientIcon(layer,item)}</span>
       <span><span class="kind">${LAYER_NAMES[layer]}</span>${item.label}</span>
-      <span class="check">${complete ? "✓" : ""}</span>
+      <span class="check">${complete ? ic("check") : ""}</span>
     `;
 
     list.appendChild(li);
@@ -754,9 +1085,9 @@ function buildChoiceButtons() {
 
       button.className = "choice" + (owned ? "" : " locked");
       button.innerHTML = `
-        <span class="swatch">${item.emoji}</span>
+        <span class="swatch">${ingredientIcon(layer,item)}</span>
         <span>${item.label}</span>
-        ${owned ? "" : `<small>🔒 ${CONFIG.UNLOCK_COST} coins</small>`}
+        ${owned ? "" : `<small>${ic("lock")} ${CONFIG.UNLOCK_COST} coins</small>`}
       `;
 
       button.addEventListener("click",() => {
@@ -807,11 +1138,11 @@ function buildRecipeBook() {
 
       html += `
         <div class="recipe-item">
-          <span class="emoji">${item.emoji}</span>
+          <span class="emoji">${ingredientIcon(layer,item)}</span>
           <span>${item.label}</span>
           ${owned
-            ? `<span class="owned">✓ Unlocked</span>`
-            : `<button onclick="unlockIngredient('${layer}','${item.id}')">Unlock · ${CONFIG.UNLOCK_COST} 🪙</button>`
+            ? `<span class="owned">${ic("check")} Unlocked</span>`
+            : `<button onclick="unlockIngredient('${layer}','${item.id}')">Unlock · ${CONFIG.UNLOCK_COST} ${ic("coin")}</button>`
           }
         </div>
       `;
@@ -827,7 +1158,7 @@ function buildRecipeBook() {
 
   html += `
     <p style="margin-top:16px;font-size:.85rem;color:var(--brown-light)">
-      🍰 You can create <strong>${combinations}</strong> different cakes with your unlocked ingredients!
+      ${ic("slice")} You can create <strong>${combinations}</strong> different cakes with your unlocked ingredients!
     </p>
   `;
 
@@ -862,7 +1193,7 @@ function unlockIngredient(layer,id) {
   buildRecipeBook();
   buildChoiceButtons();
 
-  toast("🎉 New ingredient unlocked!");
+  toast("New ingredient unlocked!");
 }
 
 function openRecipe() {
@@ -946,7 +1277,7 @@ function startGame() {
   showScreen("game-screen");
 
   $("serve-btn").disabled = false;
-  $("serve-btn").textContent = "🧁 Bake & Serve";
+  setServeLabel(false);
 
   renderScore();
   renderTimers();
@@ -954,7 +1285,7 @@ function startGame() {
   renderOrder();
   renderCake();
 
-  $("oven-status").textContent = "🧁 Ready to bake";
+  setOven("cupcake","Ready to bake");
   $("oven-status").classList.remove("active");
 
   state.lastTick = Date.now();
@@ -1056,7 +1387,7 @@ function stopBaking() {
   baking = false;
 
   $("serve-btn").disabled = false;
-  $("serve-btn").textContent = "🧁 Bake & Serve";
+  setServeLabel(false);
 
   $("cake-preview").classList.remove("serve");
   $("cake-preview").style.transform = "";
@@ -1093,8 +1424,8 @@ function serve() {
 
   baking = true;
   $("serve-btn").disabled = true;
-  $("serve-btn").textContent = "🔥 Baking...";
-  $("oven-status").textContent = "🔥 Baking your cake...";
+  setServeLabel(true);
+  setOven("flame","Baking your cake...");
   $("oven-status").classList.add("active");
 
   playSound("bake");
@@ -1122,8 +1453,7 @@ function serve() {
       CONFIG.BAKE_SECONDS - (Date.now() - bakeStart) / 1000
     );
 
-    $("oven-status").textContent =
-      "🔥 Baking... " + remaining.toFixed(1) + "s";
+    setOven("flame","Baking... " + remaining.toFixed(1) + "s");
 
     if(remaining <= 0) {
       clearInterval(bakingInterval);
@@ -1155,9 +1485,9 @@ function finishCake() {
   addCoins(CONFIG.COINS_CORRECT);
 
   playSound("success");
-  toast("🎉 Perfect cake! +10 points and +5 coins!");
+  toast("Perfect cake! +10 points, +5 coins");
 
-  $("oven-status").textContent = "✨ Freshly baked!";
+  setOven("sparkle","Freshly baked!");
   $("oven-status").classList.remove("active");
 
   $("cake-preview").classList.add("serve");
@@ -1169,12 +1499,12 @@ function finishCake() {
     $("cake-preview").style.transform = "";
 
     $("serve-btn").disabled = false;
-    $("serve-btn").textContent = "🧁 Bake & Serve";
+    setServeLabel(false);
 
     baking = false;
     nextCustomer();
 
-    $("oven-status").textContent = "🧁 Ready to bake";
+    setOven("cupcake","Ready to bake");
   },500);
 }
 
@@ -1187,7 +1517,7 @@ function expireOrder() {
   baking = false;
 
   $("serve-btn").disabled = false;
-  $("serve-btn").textContent = "🧁 Bake & Serve";
+  setServeLabel(false);
 
   $("cake-preview").classList.remove("serve");
   $("cake-preview").style.transform = "";
@@ -1198,9 +1528,9 @@ function expireOrder() {
   changeScore(-CONFIG.POINTS_PENALTY);
 
   playSound("wrong");
-  toast("😟 Customer left! -5 points",true);
+  toast("Customer left! -5 points",true);
 
-  $("oven-status").textContent = "🧁 Ready to bake";
+  setOven("cupcake","Ready to bake");
   $("oven-status").classList.remove("active");
 
   nextCustomer();
@@ -1221,7 +1551,7 @@ function endGame() {
   bakingInterval = null;
 
   $("serve-btn").disabled = false;
-  $("serve-btn").textContent = "🧁 Bake & Serve";
+  setServeLabel(false);
 
   const newBest = state.score > bestScore;
 
@@ -1245,8 +1575,8 @@ function endGame() {
 
   $("end-line").textContent =
     state.served >= 5
-      ? "Amazing work, master baker! 🍰"
-      : "Every little baker starts somewhere! 💗";
+      ? "Amazing work, master baker!"
+      : "Every little baker starts somewhere!";
 
   $("end-cake").innerHTML = cakeSVG({
     base:"strawberry",
