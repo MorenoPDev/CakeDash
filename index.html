@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cake Dash: The Little Bakery Rush</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+<!-- All the styling lives in style.css -->
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<!-- ============================================================
+     ICON SPRITE SHEET
+     Small SVG icons used all over the game. Each one is a <symbol>.
+     To use one anywhere in the HTML:  <svg class="ic"><use href="#i-star"/></svg>
+     To use one in JavaScript:         ic("star")
+     To add a new icon: copy a <symbol>, change its id (i-something) and its drawing.
+     ============================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-cupcake" viewBox="0 0 48 48">
+      <path d="M11 25h26l-3 17q-.5 2.5-3 2.5H17q-2.5 0-3-2.5z" fill="#e8b98f" stroke="#6e4a3a" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M19 28l1.5 14M24 28v14M29 28l-1.5 14" stroke="#6e4a3a" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <path d="M8 26q0-7 7-8 0-7 9-7t9 7q7 1 7 8z" fill="#ffc9d9" stroke="#6e4a3a" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="24" cy="9" r="4.5" fill="#e5486d" stroke="#6e4a3a" stroke-width="2.5"/>
+      <path d="M24 5q1-3 4-4" stroke="#6e4a3a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-slice" viewBox="0 0 24 24">
+      <path d="M3 20V12L21 8v12q0 1-1 1H4q-1 0-1-1z" fill="#ffc9d9" stroke="#6e4a3a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M3 15.5L21 13" stroke="#6e4a3a" stroke-width="1.6" opacity=".45"/>
+      <circle cx="8" cy="8.6" r="2.6" fill="#e5486d" stroke="#6e4a3a" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="M12 2.5l2.8 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.2 6.1 20.6l1.3-6.6L2.5 9.4l6.7-.8z" fill="#ffd98a" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 21s-8.5-5.3-8.5-11.2A4.6 4.6 0 0 1 12 7.4a4.6 4.6 0 0 1 8.5 2.4C20.5 15.7 12 21 12 21z" fill="#ffb3c8" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-berry" viewBox="0 0 24 24">
+      <path d="M12 22C5 20 4 11 12 8c8 3 7 12 0 14z" fill="#e5486d" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M6.5 8l5.5-4 5.5 4-5.5 2z" fill="#9ed6b0" stroke="#6e4a3a" stroke-width="1.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24">
+      <path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" fill="#ffd98a" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="13" r="8" fill="#fff" stroke="#6e4a3a" stroke-width="2"/>
+      <path d="M12 8.5V13l3 2M9 3h6" stroke="#6e4a3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="#ffd98a" stroke="#6e4a3a" stroke-width="2"/>
+      <circle cx="12" cy="12" r="5.5" fill="none" stroke="#6e4a3a" stroke-width="1.6" opacity=".45"/>
+      <path d="M9.5 9.5h2.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M4 5q4-1.5 8 1 4-2.5 8-1v13q-4-1.5-8 1-4-2.5-8-1z" fill="#fff" stroke="#6e4a3a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12 6v13" stroke="#6e4a3a" stroke-width="2"/>
+      <path d="M6.5 9.5q2-.5 3 .3M6.5 12.5q2-.5 3 .3" stroke="#e5486d" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="#6e4a3a" stroke-width="2" stroke-linecap="round"/>
+      <rect x="5" y="11" width="14" height="10" rx="3" fill="#e9d8c8" stroke="#6e4a3a" stroke-width="2"/>
+      <circle cx="12" cy="16" r="1.6" fill="#6e4a3a"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24">
+      <path d="M12 2C13 6 18 8 18 14A6 6 0 0 1 6 14C6 11 8 10 9 8c.5 2 1.5 2.5 2.5 2.5C11 8 11 5 12 2z" fill="#ff9b6b" stroke="#6e4a3a" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M12 21a3 3 0 0 1-3-3c0-2 2-3 3-5 1 2 3 3 3 5a3 3 0 0 1-3 3z" fill="#ffd98a"/>
+    </symbol>
+    <symbol id="i-oops" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9.5" fill="#fff3d1" stroke="#6e4a3a" stroke-width="1.8"/>
+      <circle cx="8.5" cy="10.5" r="1.3" fill="#6e4a3a"/>
+      <circle cx="15.5" cy="10.5" r="1.3" fill="#6e4a3a"/>
+      <path d="M8.5 16.5q3.5-3 7 0" fill="none" stroke="#6e4a3a" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24">
+      <path d="M7 3h10v5a5 5 0 0 1-10 0z" fill="#ffd98a" stroke="#6e4a3a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M7 5H4q0 5 4 5M17 5h3q0 5-4 5" fill="none" stroke="#6e4a3a" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M12 13v4M9.5 17h5M8 21h8" stroke="#6e4a3a" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+
+<div class="decor" aria-hidden="true">
+  <span><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg></span><span><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></span><span><svg class="ic" aria-hidden="true"><use href="#i-berry"/></svg></span><span><svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
+</div>
+
+<section id="start-screen" class="screen active">
+  <div class="card hero">
+    <div id="title-cake" class="hero-cake"></div>
+    <h1 class="hero-title">Cake Dash</h1>
+    <p class="hero-sub">The Little Bakery Rush</p>
+
+    <ol class="steps">
+      <li><span class="step-num">1</span>Check the customer's order</li>
+      <li><span class="step-num">2</span>Pick the base, frosting and topping</li>
+      <li><span class="step-num">3</span>Bake and serve before time runs out!</li>
+    </ol>
+
+    <p class="facts">
+      <span class="chip"><span id="info-game-seconds">120</span>s round</span>
+      <span class="chip"><span id="info-order-seconds">20</span>s per customer</span>
+    </p>
+
+    <div class="difficulty">
+      <p class="difficulty-title">Choose difficulty</p>
+      <div id="difficulty-options" class="diff-options" role="radiogroup" aria-label="Difficulty"></div>
+    </div>
+
+    <div class="reward-panel">
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Your coins</small><b id="start-coins">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Best score</small><b id="best-start">0</b></div>
+    </div>
+
+    <div class="actions">
+      <button id="start-btn" class="btn btn-primary">Start Baking</button>
+      <button id="recipe-btn-start" class="btn btn-soft"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Recipe Book</button>
+    </div>
+
+    <p class="best-line">Welcome to your little bakery! <svg class="ic" aria-hidden="true"><use href="#i-slice"/></svg></p>
+  </div>
+</section>
+
+<section id="game-screen" class="screen">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><svg class="ic" aria-hidden="true"><use href="#i-cupcake"/></svg></div>
+      <div class="brand-text">
+        <h1>Cake Dash</h1>
+        <span>The Little Bakery Rush</span>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="pill" id="timer-pill">
+        <span class="pill-icon"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg></span>
+        <span class="pill-text"><small>Time left</small><b id="game-timer">2:00</b></span>
+      </div>
+      <div class="pill">
+        <span class="pill-icon"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg></span>
+        <span class="pill-text"><small>Score</small><b id="score">0</b></span>
+      </div>
+      <div class="pill">
+        <span class="pill-icon"><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg></span>
+        <span class="pill-text"><small>Coins</small><b id="coins">0</b></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="card queue-card">
+      <h2 class="card-title">Customers</h2>
+      <p class="modal-note">Your customers are waiting! <svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></p>
+      <div id="queue" class="queue"></div>
+      <div class="customer-note"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg> Serve customers correctly to earn coins and rewards!</div>
+    </aside>
+
+    <section class="card workshop">
+      <div class="workshop-head">
+        <h2 class="card-title">Cake Workshop</h2>
+        <button id="recipe-btn-game" class="btn btn-soft btn-small"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Recipe Book</button>
+      </div>
+
+      <div class="bakery-label"><svg class="ic" aria-hidden="true"><use href="#i-slice"/></svg> LITTLE BAKERY • PREPARATION COUNTER</div>
+
+      <div id="cake-stage" class="cake-stage">
+        <span class="stage-decoration left"><svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
+        <div id="cake-preview" class="cake-preview"></div>
+        <span class="stage-decoration right"><svg class="ic" aria-hidden="true"><use href="#i-berry"/></svg></span>
+        <div id="oven-status" class="oven-status"><svg class="ic" aria-hidden="true"><use href="#i-cupcake"/></svg> Ready to bake</div>
+      </div>
+
+      <div class="section">
+        <h3><span class="num">1</span> Cake Base</h3>
+        <div id="choices-base" class="choices"></div>
+      </div>
+
+      <div class="section">
+        <h3><span class="num">2</span> Frosting</h3>
+        <div id="choices-frosting" class="choices"></div>
+      </div>
+
+      <div class="section">
+        <h3><span class="num">3</span> Topping</h3>
+        <div id="choices-topping" class="choices"></div>
+      </div>
+
+      <div class="actions">
+        <button id="clear-btn" class="btn btn-ghost">Clear</button>
+        <button id="serve-btn" class="btn btn-primary"><svg class="ic" aria-hidden="true"><use href="#i-cupcake"/></svg> Bake & Serve</button>
+      </div>
+    </section>
+
+    <aside id="order-card" class="card order-card">
+      <div class="order-head">
+        <div id="order-face" class="order-face"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></div>
+        <div>
+          <h2 class="card-title">Current Order</h2>
+          <span id="order-name" class="order-sub">Now serving</span>
+        </div>
+      </div>
+
+      <div class="patience-label">
+        <span>Customer patience &middot; <span id="mode-tag"></span></span>
+        <b id="patience-text">30s</b>
+      </div>
+
+      <div class="order-timer">
+        <div id="order-bar" class="order-bar"></div>
+        <span id="order-timer-text" class="order-timer-text">30s</span>
+      </div>
+
+      <p id="hurry-chip" class="hurry-chip hidden"><svg class="ic" aria-hidden="true"><use href="#i-oops"/></svg> Hurry! Customer is getting impatient!</p>
+
+      <p style="font-size:.82rem;color:var(--brown-light);margin-top:16px">Customer's request:</p>
+      <ul id="order-list" class="order-list"></ul>
+
+      <div class="reward-panel">
+        <div><small><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Combo streak</small><b id="combo">0x</b></div>
+        <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Correct order</small><b>+5 coins</b></div>
+      </div>
+
+      <div class="progress-area">
+        <small>Bakery progress</small>
+        <div class="progress-track">
+          <div id="round-progress" class="progress-fill"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</section>
+
+<section id="end-screen" class="screen">
+  <div class="card hero results">
+    <div id="end-cake" class="hero-cake small"></div>
+    <h1 class="hero-title">Time's Up!</h1>
+    <p id="end-line" class="hero-sub">Sweet work, baker!</p>
+
+    <p class="final-label">Final score</p>
+    <p id="final-score" class="final-score">0</p>
+    <p id="new-best" class="new-best hidden"><svg class="ic" aria-hidden="true"><use href="#i-trophy"/></svg> New best score!</p>
+
+    <p class="mode-line"><b id="end-mode">Normal</b> mode &middot; <b id="end-seconds">20</b>s per customer &middot; Best <b id="end-best">0</b></p>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stat-served">0</b><span>Cakes served</span></div>
+      <div class="stat"><b id="stat-wrong">0</b><span>Wrong cakes</span></div>
+      <div class="stat"><b id="stat-lost">0</b><span>Customers lost</span></div>
+    </div>
+
+    <div class="reward-panel">
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Coins earned</small><b id="coins-earned">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Best combo</small><b id="best-combo">0x</b></div>
+    </div>
+
+    <p class="best-line">Total coins: <strong id="total-coins">0</strong></p>
+
+    <div class="actions">
+      <button id="again-btn" class="btn btn-primary">Play Again</button>
+      <button id="menu-btn" class="btn btn-soft">Back to Menu</button>
+    </div>
+  </div>
+</section>
+
+<div id="recipe-modal" class="modal hidden">
+  <div class="card modal-box">
+    <h2 class="card-title big"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Recipe Book</h2>
+    <p class="modal-note">Discover ingredients and unlock new flavors for your bakery!</p>
+
+    <div class="reward-panel">
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-coin"/></svg> Available coins</small><b id="shop-coins">0</b></div>
+      <div><small><svg class="ic" aria-hidden="true"><use href="#i-slice"/></svg> Available ingredients</small><b id="ingredient-count">0</b></div>
+    </div>
+
+    <div id="recipe-content"></div>
+    <button id="recipe-close" class="btn btn-primary">Got it!</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT FILES
+     ORDER MATTERS: each file only uses things from the files above it.
+     Keep them in this order.
+     ============================================================ -->
+<script src="config.js"></script>
+<script src="art.js"></script>
+<script src="game.js"></script>
+
+</body>
+</html>
